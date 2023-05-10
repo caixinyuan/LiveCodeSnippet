@@ -3,14 +3,7 @@ package com.cxy.livecodetemplet.services;
 import com.cxy.livecodetemplet.Util.PluginMessage;
 import com.cxy.livecodetemplet.Util.Util;
 import com.cxy.livecodetemplet.Util.UtilState;
-import com.cxy.livecodetemplet.contextType.LiveCodeTempletContextType;
-import com.cxy.livecodetemplet.model.CodeTempletModel;
 import com.cxy.livecodetemplet.storage.LiveCodeTempletStorageSetting;
-import com.intellij.codeInsight.template.Template;
-import com.intellij.codeInsight.template.TemplateContextType;
-import com.intellij.codeInsight.template.impl.TemplateContext;
-import com.intellij.codeInsight.template.impl.TemplateImpl;
-import com.intellij.codeInsight.template.impl.TemplateSettings;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -18,8 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LiveCodeTempletService implements Disposable {
     private static final Logger log = Logger.getInstance(LiveCodeTempletService.class);
@@ -44,7 +35,7 @@ public class LiveCodeTempletService implements Disposable {
 
     //加载本地代码模板
     public static void loadMdTemplet() {
-        File localMdFile = new File(Util.localMdFilePath);
+        File localMdFile = new File(Util.defaultLocalMdFilePath);
         if (!localMdFile.exists() || !localMdFile.isFile()) {
             try {
                 //默认从github下载示例模板
@@ -55,9 +46,8 @@ public class LiveCodeTempletService implements Disposable {
                 }
                 Util.loadRemoteMd(url);
             } catch (Exception ex) {
-                log.error("FileDownloadFail", ex);
-                PluginMessage.notifyError(String.format("FileDownloadFail"));
-                return;
+                log.error("从GitHub加载默认模板失败", ex);
+                PluginMessage.notifyError("从GitHub加载默认模板失败");
             }
         } else {
             UtilState.getInstance().setCodeTempletList(Util.getCodeTempletList(localMdFile));

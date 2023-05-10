@@ -1,5 +1,5 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
+<idea-plugin require-restart="true">
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.cxy.LiveCodeTemplet</id>
 
@@ -8,7 +8,7 @@
     <name>LiveCodeTemplet</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="maonenbei@126.com" url="https://www.yourcompany.com">Caixy</vendor>
+    <vendor email="maonenbei@126.com" url="https://github.com/caixinyuan/LiveCodeTemplet">Caixy</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.

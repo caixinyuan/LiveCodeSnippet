@@ -1,29 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.cxy.livecodetemplet.form.LiveCodeTempletSettingForm">
   <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="FormLayout">
-    <rowspec value="center:max(d;4px):noGrow"/>
+    <rowspec value="center:d:grow"/>
+    <rowspec value="top:4dlu:noGrow"/>
+    <rowspec value="center:19px:grow"/>
     <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
-    <rowspec value="top:4dlu:noGrow"/>
-    <rowspec value="center:max(d;4px):noGrow"/>
-    <colspec value="fill:max(d;4px):noGrow"/>
+    <colspec value="fill:d:grow"/>
     <colspec value="left:4dlu:noGrow"/>
     <colspec value="fill:d:grow"/>
     <colspec value="left:4dlu:noGrow"/>
-    <colspec value="fill:d:noGrow"/>
+    <colspec value="fill:d:grow"/>
+    <colspec value="left:4dlu:noGrow"/>
+    <colspec value="fill:d:grow"/>
     <constraints>
-      <xy x="20" y="20" width="500" height="127"/>
+      <xy x="5" y="20" width="563" height="149"/>
     </constraints>
     <properties>
       <maximumSize width="500" height="1000"/>
       <minimumSize width="500" height="107"/>
-      <preferredSize width="500" height="104"/>
+      <preferredSize width="600" height="200"/>
     </properties>
     <border type="none"/>
     <children>
       <component id="343cb" class="javax.swing.JLabel">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="7" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
           <forms/>
         </constraints>
         <properties>
@@ -32,16 +34,16 @@
       </component>
       <component id="f5d40" class="javax.swing.JLabel">
         <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-          <forms/>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+          <forms defaultalign-horz="false"/>
         </constraints>
         <properties>
-          <text value="远程同步地址 :"/>
+          <text value="模板地址:"/>
         </properties>
       </component>
-      <component id="6fc9c" class="javax.swing.JTextField" binding="urlInput">
+      <component id="6fc9c" class="javax.swing.JTextField" binding="pathInput">
         <constraints>
-          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false">
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
           </grid>
           <forms defaultalign-horz="false"/>
@@ -55,35 +57,24 @@
       </component>
       <component id="49e58" class="javax.swing.JButton" binding="updateButton">
         <constraints>
-          <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-          <forms/>
-        </constraints>
-        <properties>
-          <text value="update"/>
-          <toolTipText value="从远程地址更新"/>
-        </properties>
-      </component>
-      <component id="1b7a" class="javax.swing.JLabel" binding="localMdPathTextLable">
-        <constraints>
-          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-          <forms/>
-        </constraints>
-        <properties>
-          <text value="本地模板文件位置:"/>
-        </properties>
-      </component>
-      <component id="4aa6f" class="javax.swing.JTextField" binding="localMdPathInput">
-        <constraints>
-          <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
+          <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
           <forms defaultalign-horz="false"/>
         </constraints>
         <properties>
-          <editable value="true"/>
-          <enabled value="true"/>
-          <maximumSize width="400" height="2147483647"/>
-          <text value="/home/caixy/code/Temp/LiveCodeTemplet/build/idea-sandbox/config/CodeTemplet.md"/>
+          <text value="更新"/>
+          <toolTipText value="从远程地址更新"/>
+        </properties>
+      </component>
+      <component id="f4f7c" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <forms defaultalign-horz="false" defaultalign-vert="false"/>
+        </constraints>
+        <properties>
+          <foreground color="-8158333"/>
+          <horizontalAlignment value="2"/>
+          <horizontalTextPosition value="2"/>
+          <text value="&lt;html&gt;&lt;body&gt;注：模板地址支持HTTP URL 和 本地文件路径两种格式&lt;br&gt;   &#10; &#9;https://raw.githubusercontent.com/caixinyuan/LiveCodeTemplet/main/CodeTemplet.md&lt;br&gt;   &#10;&#9;E://CodeTemplet.md&lt;br&gt;   &#10;&#9;更新会覆盖当前正在使用的代码模板"/>
         </properties>
       </component>
     </children>

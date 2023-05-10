@@ -1,67 +1,64 @@
 package com.cxy.livecodetemplet.form;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Validator;
 import com.cxy.livecodetemplet.Util.Util;
+import com.cxy.livecodetemplet.services.LiveCodeTempletService;
 import com.cxy.livecodetemplet.storage.LiveCodeTempletStorageSetting;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.Messages;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.util.Arrays;
 
+
 public class LiveCodeTempletSettingForm {
     private JButton updateButton;
     private JPanel panel1;
-    private JTextField urlInput;
-    private JLabel localMdPathTextLable;
-    private JTextField localMdPathInput;
+    private JTextField pathInput;
 
-    private LiveCodeTempletStorageSetting storageSetting = LiveCodeTempletStorageSetting.getInstance();
+
+    private static final Logger log = Logger.getInstance(LiveCodeTempletService.class);
 
     public LiveCodeTempletSettingForm() {
-        updateButton.addActionListener(e -> {
-            updateButtonClick();
-        });
+        updateButton.addActionListener(e -> updateButtonClick());
         initURLInputText();
-        updateLocalMdPathLableText();
     }
 
     /**
      * 更新按钮点击事件
      */
     public void updateButtonClick() {
-        String url = urlInput.getText();
-        //保存输入的URL地址并从输入的URL地址下载更新文件
-        if (StringUtils.isNotEmpty(url)) {
-            if (Validator.isUrl(url)) {
-                if (storageSetting.getState() == null || !StringUtils.equals(storageSetting.getState().getUrl(), url)) {
-                    storageSetting.getState().setUrl(url);
-                    ApplicationManager.getApplication().saveSettings();
-                }
-                Arrays.stream(JFrame.getFrames()).forEach(i -> {
-                    if (StringUtils.equals(i.getTitle(), "LiveCodeTempletSetting")) {
-                        i.dispose();
-                    }
-                });
-                Util.loadRemoteMd(url);
-            } else {
-                Messages.showInfoMessage("输入的地址无效", "提示");
-            }
+        String path = pathInput.getText();
+        if (StringUtils.isEmpty(path)) {
+            return;
         }
+        boolean isEffectivePath = false;
+        //保存输入的URL地址并从输入的URL地址下载更新文件
+        if (Validator.isUrl(path)) {
+            isEffectivePath = true;
+            Util.loadRemoteMd(path);
+        } else if (FileUtil.isFile(path)) {
+            isEffectivePath = true;
+            Util.loadLocalMd(path);
+        } else {
+            Messages.showInfoMessage("输入的地址无效", "提示");
+        }
+        if (isEffectivePath) {
+            Util.savePathSetting(path);
+            Arrays.stream(JFrame.getFrames()).filter(i -> StringUtils.equals(i.getTitle(), "LiveCodeTempletSetting")).findFirst().orElse(null).dispose();
+        }
+
     }
+
 
     private void initURLInputText() {
-        if (storageSetting.getState() != null) {
-            urlInput.setText(storageSetting.getState().getUrl());
+        if (LiveCodeTempletStorageSetting.getInstance().getState() != null) {
+            pathInput.setText(LiveCodeTempletStorageSetting.getInstance().getState().getUrl());
         }
     }
 
-    private void updateLocalMdPathLableText() {
-        if (Util.loaclMdFileExists()) {
-            localMdPathInput.setText(Util.localMdFilePath.getPath());
-        }
-    }
 
     public static void showUI() {
         JFrame frame = new JFrame("LiveCodeTempletSetting");

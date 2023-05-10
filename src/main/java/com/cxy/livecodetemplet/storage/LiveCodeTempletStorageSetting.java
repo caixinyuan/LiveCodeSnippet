@@ -2,9 +2,12 @@ package com.cxy.livecodetemplet.storage;
 
 import com.cxy.livecodetemplet.model.PluginSettingModel;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static com.intellij.openapi.application.ApplicationManager.*;
 
 @State(name = "LiveCodeTempletStorageSetting", storages = {@Storage(value = "LiveCodeTempletStorageSetting.xml")})
 public class LiveCodeTempletStorageSetting implements PersistentStateComponent<PluginSettingModel> {
@@ -25,7 +28,7 @@ public class LiveCodeTempletStorageSetting implements PersistentStateComponent<P
     }
 
     public static LiveCodeTempletStorageSetting getInstance() {
-        return ServiceManager.getService(LiveCodeTempletStorageSetting.class);
+        return ApplicationManager.getApplication().getService(LiveCodeTempletStorageSetting.class);
     }
 }
 

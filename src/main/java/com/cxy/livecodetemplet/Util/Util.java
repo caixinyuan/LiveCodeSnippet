@@ -5,33 +5,64 @@ import cn.hutool.http.HttpUtil;
 import com.cxy.livecodetemplet.model.CodeTempletModel;
 import com.cxy.livecodetemplet.model.MarkdownTableModel;
 import com.cxy.livecodetemplet.services.LiveCodeTempletService;
+import com.cxy.livecodetemplet.storage.LiveCodeTempletStorageSetting;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static cn.hutool.core.util.CharsetUtil.CHARSET_UTF_8;
 
 public class Util {
 
-    public final static URI localMdFilePath = Paths.get(PathManager.getConfigPath(), "CodeTemplet.md").toUri();
+    public final static URI defaultLocalMdFilePath = Paths.get(PathManager.getConfigPath(), "CodeTemplet.md").toUri();
 
-    public final static String defaultRemoteURL = "https://raw.githubusercontent.com/caixinyuan/LiveCodeTemplet/main/CodeTemplet.lmd";
+    public final static String defaultRemoteURL = "https://raw.githubusercontent.com/caixinyuan/LiveCodeTemplet/main/CodeTemplet.md";
 
     private static final Logger log = Logger.getInstance(LiveCodeTempletService.class);
 
 
+    public static Frame getJFrameByName(String name) {
+        return Arrays.stream(JFrame.getFrames()).filter(i -> StringUtils.equals(i.getTitle(), name)).findFirst().orElse(null);
+    }
+
+
+    /**
+     * 保存配置
+     *
+     * @param path 文件地址
+     */
+    public static void savePathSetting(String path) {
+        LiveCodeTempletStorageSetting storageSetting = LiveCodeTempletStorageSetting.getInstance();
+        if (storageSetting.getState() == null || !StringUtils.equals(storageSetting.getState().getUrl(), path)) {
+            storageSetting.getState().setUrl(path);
+            ApplicationManager.getApplication().saveSettings();
+        }
+    }
+
+    /**
+     * 下载远程文件
+     *
+     * @param url 远程地址
+     * @return 已下载的文件
+     * @throws Exception
+     */
     public static File downLoadRemoteMdFile(String url) throws Exception {
-        File mdFile = new File(localMdFilePath);
-        long fileSize = HttpUtil.downloadFile(url, mdFile, 3000);
+        File mdFile = new File(defaultLocalMdFilePath);
+        long fileSize = HttpUtil.downloadFile(url, mdFile, -1);
         if (fileSize > 0 && mdFile.exists()) {
             PluginMessage.notifyInfo("已从远程地址下载模板");
             return mdFile;
@@ -58,6 +89,29 @@ public class Util {
         });
     }
 
+    /**
+     * 加载本地模板
+     */
+    public static void loadLocalMd(String localFilePath) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(null, "正在从本地地址加载模板") {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    File mdFile = new File(localFilePath);
+                    File defaultLocalMdFile = new File(defaultLocalMdFilePath);
+                    if (mdFile.exists() && mdFile.isFile()) {
+                        FileUtil.copy(mdFile, defaultLocalMdFile, true);
+                    }
+                    setCodeTempletList(getCodeTempletList(defaultLocalMdFile));
+                    PluginMessage.notifyInfo("加载模板完成");
+                } catch (Exception ex) {
+                    log.error("从本地加载模板异常", ex);
+                    PluginMessage.notifyError("从本地加载模板异常");
+                }
+            }
+        });
+    }
+
 
     public static void setCodeTempletList(List<CodeTempletModel> codeTempletList) {
         UtilState.getInstance().clearCodeTempletList();
@@ -65,12 +119,12 @@ public class Util {
     }
 
     /**
-     * 本地模板文件是否存在
+     * 本地默认模板文件是否存在
      *
      * @return
      */
     public static Boolean loaclMdFileExists() {
-        File localMdFile = new File(localMdFilePath);
+        File localMdFile = new File(defaultLocalMdFilePath);
         return localMdFile.exists();
     }
 
