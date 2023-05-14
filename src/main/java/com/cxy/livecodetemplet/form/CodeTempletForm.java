@@ -189,7 +189,7 @@ public class CodeTempletForm {
     private void createUIComponents() {
         EditorFactory editorFactory = EditorFactory.getInstance();
         Document document = editorFactory.createDocument("");
-        editorCodeText = new EditorTextField(document, null, filetype, false) {
+        editorCodeText = new EditorTextField(document, null, UtilState.getInstance().getJavaFileType()) {
             @Override
             protected @NotNull EditorEx createEditor() {
                 EditorEx editor = super.createEditor();
