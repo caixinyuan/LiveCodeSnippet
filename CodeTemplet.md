@@ -197,3 +197,49 @@ public static String getCurrentWorkingDirectoryPath() {
 ```
 
 ------
+
+|           标题            |            描述             |        标签        | 添加人 | 版本 |
+| :-----------------------: | :-------------------------: | :----------------: | :----: | :--: |
+| InputStream转换为字符串。 | InputStream()转换为字符串。 | String,InputStream |  cxy   | 1.0  |
+
+```   java
+//region 1
+dsdsdsdsd
+//endregion
+
+//region 2
+dsdsdsdsd
+
+//region 2.2
+dsdsdsdsd
+//endregion
+//endregion
+
+
+
+//region 3
+dsdsdsdsd
+//endregion
+
+
+
+//region 4
+dsdsdsdsd
+//endregion
+
+
+```
+
+------
+
+|        标题        |        描述        |              标签              | 添加人 | 版本 |
+| :----------------: | :----------------: | :----------------------------: | :----: | :--: |
+| 获取当前工作目录。 | 获取当前工作目录。 | getCurrentWorkingDirectoryPath |  cxy   | 1.0  |
+
+```   java
+public static String getCurrentWorkingDirectoryPath() {
+    return FileSystems.getDefault().getPath("").toAbsolutePath().toString();
+}
+```
+
+------

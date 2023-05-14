@@ -4,12 +4,11 @@ import com.cxy.livecodetemplet.Util.PluginMessage;
 import com.cxy.livecodetemplet.Util.UtilState;
 import com.cxy.livecodetemplet.model.CodeTempletModel;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.editor.CaretModel;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.highlighter.EditorHighlighter;
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
@@ -25,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,30 +58,6 @@ public class CodeTempletForm {
         });
         inputBUtton.addActionListener(e -> inputButtonClick());
         codeTagList.setPreferredSize(new Dimension(100, codeTempletList.size() * 60));
-    }
-
-
-    private void resetEditorCodeTextSize() {
-        try {
-            if (StringUtils.isEmpty(editorCodeText.getText()) || editorCodeText.getEditor() == null) {
-                return;
-            }
-            Integer lineHeight = editorCodeText.getEditor().getLineHeight();
-            Integer lineCount = editorCodeText.getDocument().getLineCount();
-            int editorHeight = lineHeight * (lineCount + additionalLinesCount + 1);
-            String text = Arrays.stream(editorCodeText.getText().split("\n")).max((i, k) -> {
-                Integer a = i.length();
-                Integer b = k.length();
-                return a.compareTo(b);
-            }).orElse("");
-            int editorWidth = editorCodeText.getFontMetrics(editorCodeText.getFont()).stringWidth(text) + 10;
-//            editorCodeText.setPreferredSize(new Dimension(editorWidth, editorHeight));
-//            editorCodeText.revalidate();
-//            editorCodeText.repaint();
-
-        } catch (Exception ex) {
-            PluginMessage.notifyWarning("重新设置编辑器大小时异常");
-        }
     }
 
     private void setEditorCodeText(CodeTempletModel selectedItem) {
@@ -121,27 +97,139 @@ public class CodeTempletForm {
     }
 
 
+    private static class RegionDescriptor {
+        private final int startOffset;
+        private int endOffset;
+        private final String prompt;
+        private RegionDescriptor parent;
+        private List<RegionDescriptor> children = new ArrayList<>();
+
+        public RegionDescriptor(int startOffset, int endOffset, String prompt) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.prompt = prompt;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void addChild(RegionDescriptor child) {
+            this.children.add(child);
+            child.setParent(this);
+        }
+
+        public RegionDescriptor getParent() {
+            return parent;
+        }
+
+        public void setParent(RegionDescriptor parent) {
+            this.parent = parent;
+        }
+
+        public String getPrompt() {
+            return this.prompt;
+        }
+
+    }
+
+
+    private List<RegionDescriptor> parseRegions(String text) {
+        final String REGION_PREFIX = "//region";
+        final String REGION_SUFFIX = "//endregion";
+        List<RegionDescriptor> regions = new ArrayList<>();
+        RegionDescriptor currentRegion = null;
+        int startOffset = 0;
+        while (true) {
+            int startIndex = text.indexOf(REGION_PREFIX, startOffset);
+            int endIndex = text.indexOf(REGION_SUFFIX, startOffset);
+            if (startIndex < 0 && endIndex < 0) {
+                break;
+            }
+            if (endIndex < 0 || (startIndex >= 0 && startIndex < endIndex)) {
+                int lineStartOffset = text.lastIndexOf('\n', startIndex);
+                if (lineStartOffset < 0) {
+                    lineStartOffset = 0;
+                } else {
+                    lineStartOffset++;
+                }
+                int lineEndOffset = text.indexOf('\n', startIndex);
+                if (lineEndOffset < 0) {
+                    lineEndOffset = text.length();
+                }
+                String prompt = text.substring(lineStartOffset, lineEndOffset).trim();
+                if (prompt.startsWith(REGION_PREFIX)) {
+                    prompt = prompt.substring(REGION_PREFIX.length()).trim();
+                }
+                RegionDescriptor newRegion = new RegionDescriptor(startIndex, -1, prompt);
+                if (currentRegion != null) {
+                    currentRegion.addChild(newRegion);
+                }
+                currentRegion = newRegion;
+                regions.add(newRegion);
+                startOffset = startIndex + REGION_PREFIX.length();
+            } else {
+                currentRegion.setEndOffset(endIndex + REGION_SUFFIX.length());
+                currentRegion = currentRegion.getParent();
+                startOffset = endIndex + REGION_SUFFIX.length();
+            }
+        }
+        return regions;
+    }
+
+
     private void createUIComponents() {
         EditorFactory editorFactory = EditorFactory.getInstance();
         Document document = editorFactory.createDocument("");
-        editorCodeText = new EditorTextField(document, null, UtilState.getInstance().getJavaFileType()) {
+        editorCodeText = new EditorTextField(document, null, filetype, false) {
             @Override
             protected @NotNull EditorEx createEditor() {
                 EditorEx editor = super.createEditor();
                 editor.getSettings().setLineNumbersShown(true);
                 editor.getSettings().setFoldingOutlineShown(true);
+                editor.getSettings().setAutoCodeFoldingEnabled(true);
+                editor.getSettings().setAdditionalColumnsCount(5);
                 editor.getSettings().setAdditionalLinesCount(additionalLinesCount);
                 editor.setOneLineMode(false);
-                editor.setViewer(true);
                 editor.getSettings().setUseSoftWraps(false);
+                editor.getFoldingModel().setFoldingEnabled(true);
                 EditorColorsScheme setting = EditorColorsManager.getInstance().getGlobalScheme();
                 EditorHighlighter highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(UtilState.getInstance().getJavaFileType(), setting, UtilState.getInstance().getProject());
                 editor.setHighlighter(highlighter);
                 editor.setHorizontalScrollbarVisible(true);
                 editor.setVerticalScrollbarVisible(true);
+
+
+                document.addDocumentListener(new DocumentListener() {
+                    @Override
+                    public void documentChanged(@NotNull DocumentEvent event) {
+                        DocumentListener.super.documentChanged(event);
+                        editor.getFoldingModel().runBatchFoldingOperation(() -> {
+                            String text = event.getDocument().getText();
+                            List<RegionDescriptor> regions = parseRegions(text);
+                            regions.forEach(i -> {
+                                FoldRegion foldRegion = editor.getFoldingModel().addFoldRegion(i.getStartOffset(), i.getEndOffset(), i.getPrompt());
+                                if (foldRegion!=null){
+                                    foldRegion.setExpanded(false);
+                                }
+                            });
+                        });
+                    }
+                });
                 return editor;
             }
         };
+
+
+        editorCodeText.setDocument(document);
         codeTagList = new JBList<>();
         // 创建 ListSpeedSearch 对象
         ListSpeedSearch<CodeTempletModel> speedSearch = new ListSpeedSearch<>(codeTagList);
