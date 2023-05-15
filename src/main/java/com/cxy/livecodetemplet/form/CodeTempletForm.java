@@ -3,13 +3,22 @@ package com.cxy.livecodetemplet.form;
 import com.cxy.livecodetemplet.Util.PluginMessage;
 import com.cxy.livecodetemplet.Util.UtilState;
 import com.cxy.livecodetemplet.model.CodeTempletModel;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.impl.MenuItemPresentationFactory;
+import com.intellij.openapi.actionSystem.impl.PresentationFactory;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.editor.actionSystem.EditorActionManager;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.editor.event.SelectionEvent;
+import com.intellij.openapi.editor.event.SelectionListener;
 import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.editor.ex.FoldingModelEx;
 import com.intellij.openapi.editor.highlighter.EditorHighlighter;
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -24,9 +33,14 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+
 import java.util.ArrayList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 public class CodeTempletForm {
     private JBList<CodeTempletModel> codeTagList;
@@ -37,6 +51,7 @@ public class CodeTempletForm {
     private JPanel panel2;
 
     private final Integer additionalLinesCount = 2;
+
 
     public CodeTempletForm(Object value) {
         List<CodeTempletModel> codeTempletList = UtilState.getInstance().getCodeTempletList();
@@ -77,14 +92,23 @@ public class CodeTempletForm {
 
 
     private void inputButtonClick() {
+        if (StringUtils.isEmpty(editorCodeText.getText())) {
+            return;
+        }
         Editor editor = FileEditorManager.getInstance(UtilState.getInstance().getProject()).getSelectedTextEditor();
         if (editor != null) {
             WriteCommandAction.runWriteCommandAction(UtilState.getInstance().getProject(), () -> {
                 CaretModel caretModel = editor.getCaretModel();
                 int offset = caretModel.getOffset();
                 Document document = editor.getDocument();
-                document.insertString(offset, editorCodeText.getText());
-                editor.getSelectionModel().setSelection(offset, offset + editorCodeText.getText().length());
+                String insertText = editorCodeText.getText();
+                if (editorCodeText.getEditor() != null && editorCodeText.getEditor().getSelectionModel().hasSelection(true)) {
+                    insertText = editorCodeText.getEditor().getSelectionModel().getSelectedText();
+                }
+                if (StringUtils.isNotEmpty(insertText)) {
+                    document.insertString(offset, insertText);
+                    editor.getSelectionModel().setSelection(offset, offset + insertText.length());
+                }
             });
             Arrays.stream(JFrame.getFrames()).forEach(i -> {
                 if (StringUtils.equals(i.getTitle(), "CodeTemplet")) {
@@ -187,9 +211,15 @@ public class CodeTempletForm {
 
 
     private void createUIComponents() {
+        createEditorTextField();
+        createJBList();
+    }
+
+
+    private void createEditorTextField() {
         EditorFactory editorFactory = EditorFactory.getInstance();
         Document document = editorFactory.createDocument("");
-        editorCodeText = new EditorTextField(document, null, UtilState.getInstance().getJavaFileType()) {
+        editorCodeText = new EditorTextField(document, UtilState.getInstance().getProject(), UtilState.getInstance().getJavaFileType()) {
             @Override
             protected @NotNull EditorEx createEditor() {
                 EditorEx editor = super.createEditor();
@@ -201,6 +231,17 @@ public class CodeTempletForm {
                 editor.setOneLineMode(false);
                 editor.getSettings().setUseSoftWraps(false);
                 editor.getFoldingModel().setFoldingEnabled(true);
+                EditorSettings settings = editor.getSettings();
+                settings.setAdditionalColumnsCount(10);
+                settings.setLineNumbersShown(true);
+                settings.setFoldingOutlineShown(true);
+                settings.setAutoCodeFoldingEnabled(true);
+                settings.setLineMarkerAreaShown(true);
+                settings.setAdditionalLinesCount(additionalLinesCount);
+                editor.setOneLineMode(true);
+                editor.setViewer(true);
+                settings.setUseSoftWraps(false);
+
                 EditorColorsScheme setting = EditorColorsManager.getInstance().getGlobalScheme();
                 EditorHighlighter highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(UtilState.getInstance().getJavaFileType(), setting, UtilState.getInstance().getProject());
                 editor.setHighlighter(highlighter);
@@ -217,19 +258,55 @@ public class CodeTempletForm {
                             List<RegionDescriptor> regions = parseRegions(text);
                             regions.forEach(i -> {
                                 FoldRegion foldRegion = editor.getFoldingModel().addFoldRegion(i.getStartOffset(), i.getEndOffset(), i.getPrompt());
-                                if (foldRegion!=null){
+                                if (foldRegion != null) {
                                     foldRegion.setExpanded(false);
                                 }
                             });
                         });
+                        editor.getSelectionModel().addSelectionListener(new SelectionListener() {
+                            @Override
+                            public void selectionChanged(@NotNull SelectionEvent e) {
+                                SelectionListener.super.selectionChanged(e);
+                                if (e.getEditor().getSelectionModel().hasSelection()) {
+                                    inputBUtton.setText("插入已选择的内容");
+                                } else {
+                                    inputBUtton.setText("插入代码段");
+                                }
+                            }
+                        });
+                    }
+                });
+
+                editorCodeText.setDocument(document);
+                DefaultActionGroup actionGroup = new DefaultActionGroup();
+                AnAction editorInsetAction = new AnAction("插入选中的内容") {
+                    @Override
+                    public void actionPerformed(@NotNull AnActionEvent e) {
+                        inputButtonClick();
+                    }
+                };
+                AnAction EditorCopyAction = ActionManager.getInstance().getAction("EditorCopy");
+                editorCodeText.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        super.mouseReleased(e);
+                        if (SwingUtilities.isRightMouseButton(e)) {
+                            actionGroup.removeAll();
+                            if (editorCodeText.getEditor().getSelectionModel().hasSelection(true)) {
+                                actionGroup.addAction(editorInsetAction);
+                                actionGroup.addAction(EditorCopyAction);
+                            }
+                            ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("MyPopupMenu", actionGroup);
+                            popupMenu.getComponent().show(e.getComponent(), e.getX(), e.getY());
+                        }
                     }
                 });
                 return editor;
             }
         };
+    }
 
-
-        editorCodeText.setDocument(document);
+    private void createJBList() {
         codeTagList = new JBList<>();
         // 创建 ListSpeedSearch 对象
         ListSpeedSearch<CodeTempletModel> speedSearch = new ListSpeedSearch<>(codeTagList);
@@ -295,4 +372,5 @@ public class CodeTempletForm {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+
 }

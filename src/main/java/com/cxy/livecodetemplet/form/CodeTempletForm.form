@@ -36,13 +36,17 @@
           </component>
           <component id="1dc79" class="com.intellij.ui.EditorTextField" binding="editorCodeText" custom-create="true">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-              <forms defaultalign-vert="false"/>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-horz="false" defaultalign-vert="false"/>
             </constraints>
             <properties>
               <autoscrolls value="true"/>
+              <enabled value="true"/>
+              <inheritsPopupMenu value="false"/>
+              <opaque value="true"/>
               <preferredSize width="800" height="768"/>
               <text value=""/>
+              <viewer value="true"/>
             </properties>
           </component>
         </children>
