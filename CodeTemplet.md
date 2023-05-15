@@ -198,62 +198,14 @@ public static String getCurrentWorkingDirectoryPath() {
 
 ------
 
-|           标题            |            描述             |        标签        | 添加人 | 版本 |
-| :-----------------------: | :-------------------------: | :----------------: | :----: | :--: |
-| InputStream转换为字符串。 | InputStream()转换为字符串。 | String,InputStream |  cxy   | 1.0  |
-
-```   java
-//region 1
-dsdsdsdsd
-//endregion
-
-//region 2
-dsdsdsdsd
-
-//region 2.2
-dsdsdsdsd
-//endregion
-//endregion
-
-
-
-//region 3
-dsdsdsdsd
-//endregion
-
-
-
-//region 4
-dsdsdsdsd
-//endregion
-
-
-```
-
-------
-
-|        标题        |        描述        |              标签              | 添加人 | 版本 |
-| :----------------: | :----------------: | :----------------------------: | :----: | :--: |
-| 获取当前工作目录。 | 获取当前工作目录。 | getCurrentWorkingDirectoryPath |  cxy   | 1.0  |
-
-```   java
-public static String getCurrentWorkingDirectoryPath() {
-    return FileSystems.getDefault().getPath("").toAbsolutePath().toString();
-}
-=======
 |      标题       |            描述            |      标签       | 添加人 | 版本 |
 | :-------------: | :------------------------: | :-------------: | :----: | :--: |
 | Hutool-DateUtil | Hutool时间日期工具使用方法 | Hutool,DateUtil |  cxy   | 1.0  |
 
 ```   java
-/**
- * Date、long、Calendar之间的相互转换
- */
-    
-    //region My Custom Region
-    // Your code goes here...
-    //endregion
 
+    //region Date、long、Calendar之间的相互转换
+    
     //当前时间
     Date date = DateUtil.date();
     //当前时间
@@ -265,7 +217,9 @@ public static String getCurrentWorkingDirectoryPath() {
     //当前日期字符串，格式：yyyy-MM-dd
     String today= DateUtil.today();
     
-============================字符串转日期  
+    //endregion
+    
+    //region 字符串转日期  
     
     String dateStr = "2017-03-01";
 	Date date = DateUtil.parse(dateStr);
@@ -273,7 +227,9 @@ public static String getCurrentWorkingDirectoryPath() {
 	String dateStr = "2017-03-01";
 	Date date = DateUtil.parse(dateStr, "yyyy-MM-dd");
 
-============================格式化日期输出
+    //endregion
+    
+    //region 格式化日期输出
     
     String dateStr = "2017-03-01";
     Date date = DateUtil.parse(dateStr);
@@ -290,7 +246,9 @@ public static String getCurrentWorkingDirectoryPath() {
     //结果：00:00:00
     String formatTime = DateUtil.formatTime(date);
 
-============================获取Date对象的某个部分
+    //endregion
+    
+    //region 获取Date对象的某个部分
     
     Date date = DateUtil.date();
     //获得年的部分
@@ -299,8 +257,10 @@ public static String getCurrentWorkingDirectoryPath() {
     DateUtil.month(date);
     //获得月份枚举
     DateUtil.monthEnum(date);
+    
+    //endregion
 
-============================开始和结束时间
+    //region 开始和结束时间
     
     String dateStr = "2017-03-01 22:33:23";
     Date date = DateUtil.parse(dateStr);
@@ -310,8 +270,10 @@ public static String getCurrentWorkingDirectoryPath() {
 
     //一天的结束，结果：2017-03-01 23:59:59
     Date endOfDay = DateUtil.endOfDay(date); 
+    
+    //endregion
 
-============================日期时间偏移
+    //region 日期时间偏移
     
     String dateStr = "2017-03-01 22:33:23";
     Date date = DateUtil.parse(dateStr);
@@ -338,8 +300,10 @@ public static String getCurrentWorkingDirectoryPath() {
     DateUtil.lastMonth()
     //下个月
     DateUtil.nextMonth()
+    
+    //endregion
         
-============================日期时间差
+    //region 日期时间差
         
     String dateStr1 = "2017-03-01 22:33:23";
     Date date1 = DateUtil.parse(dateStr1);
@@ -350,173 +314,26 @@ public static String getCurrentWorkingDirectoryPath() {
     //相差一个月，31天
     long betweenDay = DateUtil.between(date1, date2, DateUnit.DAY);
 
-============================格式化时间差
+    //endregion
+    
+    //region 格式化时间差
     
     //Level.MINUTE表示精确到分
     String formatBetween = DateUtil.formatBetween(between, Level.MINUTE);
     //输出：31天1小时
     Console.log(formatBetween);
 
-============================其它
+    //endregion
+    
+    //region 其它
     
     //年龄
     DateUtil.ageOfNow("1990-01-30");
 
     //是否闰年
     DateUtil.isLeapYear(2017);
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
-```
-
-------
-| 标题 |   描述   |    标签    | 添加人 | 版本 |
-| :--: | :------: | :--------: | :----: | :--: |
-| Test | Test内容 | T,FU,caixy |  cxy   | 1.0  |
-
-```   java
-resultSet.addElement(LookupElementBuilder.create("Hello"));
+    
+    //endregion
 ```
 
 ------

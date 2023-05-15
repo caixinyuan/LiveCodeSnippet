@@ -4,23 +4,20 @@ import com.cxy.livecodetemplet.Util.PluginMessage;
 import com.cxy.livecodetemplet.Util.UtilState;
 import com.cxy.livecodetemplet.model.CodeTempletModel;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.impl.MenuItemPresentationFactory;
-import com.intellij.openapi.actionSystem.impl.PresentationFactory;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
-import com.intellij.openapi.editor.actionSystem.EditorActionManager;
-import com.intellij.openapi.editor.colors.EditorColorsManager;
-import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.event.SelectionEvent;
 import com.intellij.openapi.editor.event.SelectionListener;
 import com.intellij.openapi.editor.ex.EditorEx;
-import com.intellij.openapi.editor.ex.FoldingModelEx;
 import com.intellij.openapi.editor.highlighter.EditorHighlighter;
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
+import com.intellij.openapi.editor.markup.HighlighterLayer;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.ListSpeedSearch;
@@ -33,14 +30,11 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-
-import java.util.ArrayList;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Supplier;
 
 public class CodeTempletForm {
     private JBList<CodeTempletModel> codeTagList;
@@ -81,7 +75,7 @@ public class CodeTempletForm {
         }
         if (selectedItem != null) {
             if (selectedItem.getCodeTemplet() != null) {
-                editorCodeText.setText(selectedItem.getCodeTemplet());
+                editorCodeText.getDocument().setText(selectedItem.getCodeTemplet());
             }
         }
     }
@@ -121,6 +115,9 @@ public class CodeTempletForm {
     }
 
 
+    /**
+     * 代码折叠支持类
+     */
     private static class RegionDescriptor {
         private final int startOffset;
         private int endOffset;
@@ -166,6 +163,12 @@ public class CodeTempletForm {
     }
 
 
+    /**
+     * 查到需要折叠的代码
+     *
+     * @param text
+     * @return
+     */
     private List<RegionDescriptor> parseRegions(String text) {
         final String REGION_PREFIX = "//region";
         final String REGION_SUFFIX = "//endregion";
@@ -223,32 +226,27 @@ public class CodeTempletForm {
             @Override
             protected @NotNull EditorEx createEditor() {
                 EditorEx editor = super.createEditor();
-                editor.getSettings().setLineNumbersShown(true);
-                editor.getSettings().setFoldingOutlineShown(true);
-                editor.getSettings().setAutoCodeFoldingEnabled(true);
-                editor.getSettings().setAdditionalColumnsCount(5);
-                editor.getSettings().setAdditionalLinesCount(additionalLinesCount);
                 editor.setOneLineMode(false);
-                editor.getSettings().setUseSoftWraps(false);
-                editor.getFoldingModel().setFoldingEnabled(true);
-                EditorSettings settings = editor.getSettings();
-                settings.setAdditionalColumnsCount(10);
-                settings.setLineNumbersShown(true);
-                settings.setFoldingOutlineShown(true);
-                settings.setAutoCodeFoldingEnabled(true);
-                settings.setLineMarkerAreaShown(true);
-                settings.setAdditionalLinesCount(additionalLinesCount);
-                editor.setOneLineMode(true);
-                editor.setViewer(true);
-                settings.setUseSoftWraps(false);
-
-                EditorColorsScheme setting = EditorColorsManager.getInstance().getGlobalScheme();
-                EditorHighlighter highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(UtilState.getInstance().getJavaFileType(), setting, UtilState.getInstance().getProject());
-                editor.setHighlighter(highlighter);
+                editor.setViewer(false);
                 editor.setHorizontalScrollbarVisible(true);
                 editor.setVerticalScrollbarVisible(true);
+                EditorSettings settings = editor.getSettings();
+                settings.setAdditionalColumnsCount(10);
+                settings.setAdditionalLinesCount(additionalLinesCount);
+                settings.setLineNumbersShown(true);
+                settings.setFoldingOutlineShown(true);
 
+                EditorColorsScheme colorSettings = EditorColorsManager.getInstance().getGlobalScheme();
+                EditorHighlighter highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(UtilState.getInstance().getJavaFileType(), colorSettings, UtilState.getInstance().getProject());
 
+                TextAttributes attributes = new TextAttributes();
+                attributes.setForegroundColor(new Color(98, 151, 85));
+                attributes.setFontType(Font.BOLD);
+                TextAttributesKey textAttributesKey = TextAttributesKey.createTextAttributesKey("MY_REGION_HIGHLIGHT");
+                colorSettings.setAttributes(textAttributesKey, attributes);
+                editor.setHighlighter(highlighter);
+
+                //自定义折叠
                 document.addDocumentListener(new DocumentListener() {
                     @Override
                     public void documentChanged(@NotNull DocumentEvent event) {
@@ -258,8 +256,13 @@ public class CodeTempletForm {
                             List<RegionDescriptor> regions = parseRegions(text);
                             regions.forEach(i -> {
                                 FoldRegion foldRegion = editor.getFoldingModel().addFoldRegion(i.getStartOffset(), i.getEndOffset(), i.getPrompt());
+                                //高亮显示内容
+                                TextAttributes placeholderAttributes = new TextAttributes();
+                                placeholderAttributes.copyFrom(attributes);
+                                editor.getMarkupModel().addLineHighlighter(event.getDocument().getLineNumber(i.getStartOffset()), HighlighterLayer.SELECTION - 1, placeholderAttributes);
                                 if (foldRegion != null) {
                                     foldRegion.setExpanded(false);
+                                    foldRegion.setInnerHighlightersMuted(true);
                                 }
                             });
                         });
@@ -313,7 +316,8 @@ public class CodeTempletForm {
         speedSearch.setComparator(new SpeedSearchComparator());
     }
 
-    private DefaultListCellRenderer getListCellRendererComponent() {
+
+    private @NotNull DefaultListCellRenderer getListCellRendererComponent() {
         return new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
