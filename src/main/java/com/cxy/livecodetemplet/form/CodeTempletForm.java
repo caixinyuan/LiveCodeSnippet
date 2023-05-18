@@ -3,6 +3,7 @@ package com.cxy.livecodetemplet.form;
 import com.cxy.livecodetemplet.Util.PluginMessage;
 import com.cxy.livecodetemplet.Util.UtilState;
 import com.cxy.livecodetemplet.model.CodeTempletModel;
+import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
@@ -19,6 +20,10 @@ import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.editor.markup.HighlighterLayer;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.ui.JBPopupMenu;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.ListSpeedSearch;
 import com.intellij.ui.SpeedSearchComparator;
@@ -26,6 +31,7 @@ import com.intellij.ui.components.JBList;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.intellij.plugins.markdown.ui.preview.MarkdownPreviewFileEditor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -43,7 +49,10 @@ public class CodeTempletForm {
     private JButton inputBUtton;
     private JScrollPane listScrollPane;
     private JPanel panel2;
-
+    private JPanel editorPanel;
+    private JPanel markdownPreviewPanel;
+    private MarkdownPreviewFileEditor markdownPreviewFileEditor;
+    private final DefaultActionGroup actionGroup = new DefaultActionGroup();
     private final Integer additionalLinesCount = 2;
 
 
@@ -53,16 +62,16 @@ public class CodeTempletForm {
         if (value != null) {
             if (value instanceof CodeTempletModel && codeTempletList.contains(value)) {
                 codeTagList.setSelectedValue(value, true);
-                setEditorCodeText();
+                codeTagListClick();
             }
         } else if (codeTempletList.size() > 0) {
             codeTagList.setSelectedIndex(0);
-            setEditorCodeText();
+            codeTagListClick();
         }
         codeTagList.setCellRenderer(getListCellRendererComponent());
         codeTagList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                setEditorCodeText();
+                codeTagListClick();
             }
         });
         inputBUtton.addActionListener(e -> inputButtonClick());
@@ -85,6 +94,9 @@ public class CodeTempletForm {
     }
 
 
+    /**
+     * 插入代码段按钮点击事件
+     */
     private void inputButtonClick() {
         if (StringUtils.isEmpty(editorCodeText.getText())) {
             return;
@@ -105,12 +117,40 @@ public class CodeTempletForm {
                 }
             });
             Arrays.stream(JFrame.getFrames()).forEach(i -> {
-                if (StringUtils.equals(i.getTitle(), "CodeTemplet")) {
+                if (StringUtils.equals(i.getName(), "CodeTemplet")) {
                     i.dispose();
                 }
             });
         } else {
             PluginMessage.notifyInfo("not found Editor");
+        }
+    }
+
+    /**
+     * 列表点击事件
+     */
+    private void codeTagListClick() {
+        if (StringUtils.equals("markdown", codeTagList.getSelectedValue().getCodeType())) {
+            PsiFile psiFile = PsiFileFactory.getInstance(UtilState.getInstance().getProject()).createFileFromText("MDRE", Language.findLanguageByID("JAVA"), codeTagList.getSelectedValue().getCodeTemplet());
+            VirtualFile virtualFile = psiFile.getVirtualFile();
+            markdownPreviewFileEditor = new MarkdownPreviewFileEditor(UtilState.getInstance().getProject(), virtualFile);
+            markdownPreviewFileEditor.setMainEditor(FileEditorManager.getInstance(UtilState.getInstance().getProject()).getSelectedTextEditor());
+            markdownPreviewPanel.removeAll();
+            JComponent jComponent = markdownPreviewFileEditor.getPreferredFocusedComponent();
+            JBPopupMenu jbPopupMenu = new JBPopupMenu();
+            jbPopupMenu.add("1");
+            jbPopupMenu.add(new JMenuItem("ss"));
+            jComponent.setComponentPopupMenu(jbPopupMenu);
+
+            markdownPreviewPanel.add(jComponent);
+            markdownPreviewPanel.setVisible(true);
+            editorPanel.removeAll();
+            editorPanel.setVisible(false);
+            jComponent.requestFocusInWindow();
+        } else {
+            editorPanel.setVisible(true);
+            markdownPreviewPanel.setVisible(false);
+            setEditorCodeText();
         }
     }
 
@@ -216,6 +256,17 @@ public class CodeTempletForm {
     private void createUIComponents() {
         createEditorTextField();
         createJBList();
+        createEditorPanel();
+        createMarkdownPreviewPanel();
+    }
+
+    private void createEditorPanel() {
+        editorPanel = new JPanel(new BorderLayout());
+        editorPanel.add(editorCodeText, BorderLayout.CENTER);
+    }
+
+    private void createMarkdownPreviewPanel() {
+        markdownPreviewPanel = new JPanel(new FlowLayout());
     }
 
 
@@ -281,7 +332,7 @@ public class CodeTempletForm {
                 });
 
                 editorCodeText.setDocument(document);
-                DefaultActionGroup actionGroup = new DefaultActionGroup();
+
                 AnAction editorInsetAction = new AnAction("插入选中的内容") {
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
@@ -360,6 +411,7 @@ public class CodeTempletForm {
 
     public static void showUI() {
         JFrame frame = new JFrame("CodeTemplet");
+        frame.setName("CodeTemplet");
         JPanel jPanel = new CodeTempletForm(null).panel1;
         frame.setContentPane(jPanel);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -370,6 +422,7 @@ public class CodeTempletForm {
 
     public static void showUI(Object value) {
         JFrame frame = new JFrame("CodeTemplet");
+        frame.setName("CodeTemplet");
         frame.setContentPane(new CodeTempletForm(value).panel1);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();

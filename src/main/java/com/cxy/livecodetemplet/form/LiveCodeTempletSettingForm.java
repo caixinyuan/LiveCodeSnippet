@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.util.Arrays;
+import java.util.Objects;
 
 
 public class LiveCodeTempletSettingForm {
@@ -47,7 +48,7 @@ public class LiveCodeTempletSettingForm {
         }
         if (isEffectivePath) {
             Util.savePathSetting(path);
-            Arrays.stream(JFrame.getFrames()).filter(i -> StringUtils.equals(i.getTitle(), "LiveCodeTempletSetting")).findFirst().orElse(null).dispose();
+            Objects.requireNonNull(Arrays.stream(JFrame.getFrames()).filter(i -> StringUtils.equals(i.getName(), "LiveCodeTempletSetting")).findFirst().orElse(null)).dispose();
         }
 
     }
@@ -62,6 +63,7 @@ public class LiveCodeTempletSettingForm {
 
     public static void showUI() {
         JFrame frame = new JFrame("LiveCodeTempletSetting");
+        frame.setName("LiveCodeTempletSetting");
         frame.setContentPane(new LiveCodeTempletSettingForm().panel1);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();

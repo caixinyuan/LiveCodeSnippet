@@ -10,11 +10,13 @@ import java.util.List;
  */
 public class MarkdownTableModel {
     private List<String> header;
+    private String type;
     private List<List<String>> data;
     private String codetemplet;
 
     public MarkdownTableModel() {
         this.header = new ArrayList<>();
+        this.type = "";
         this.data = new ArrayList<>();
         this.codetemplet = "";
     }
@@ -32,10 +34,18 @@ public class MarkdownTableModel {
         }
     }
 
-    public void addCodeTemplet(String line) {
+    public void addCodeTemplet(String line, String codeType) {
         if (!StrUtil.equals(line, "```")) {
             codetemplet += line + "\n";
         }
+    }
+
+    public void addType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return this.type;
     }
 
     public List<List<String>> getData() {
@@ -57,6 +67,7 @@ public class MarkdownTableModel {
         sb.append("Codetemplet: ").append(codetemplet).append("\n");
         sb.append("Header: ").append(header).append("\n");
         sb.append("Data: ").append(data).append("\n");
+        sb.append("Type: ").append(type).append("\n");
 
         return sb.toString();
     }

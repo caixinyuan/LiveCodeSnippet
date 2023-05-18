@@ -25,6 +25,9 @@ public class CodeTempletModel {
     //代码模板
     private String codeTemplet;
 
+    //代码类型
+    private String codeType;
+
 
     public String getTitle() {
         return title;
@@ -73,4 +76,13 @@ public class CodeTempletModel {
     public void setCodeTemplet(String codeTemplet) {
         this.codeTemplet = codeTemplet;
     }
+
+    public String getCodeType() {
+        return this.codeType;
+    }
+
+    public void setCodeType(String codeType) {
+        this.codeType = codeType;
+    }
+
 }

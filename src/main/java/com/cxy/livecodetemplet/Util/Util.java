@@ -20,9 +20,9 @@ import java.awt.*;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.*;
+import java.util.stream.IntStream;
 
 import static cn.hutool.core.util.CharsetUtil.CHARSET_UTF_8;
 
@@ -102,8 +102,13 @@ public class Util {
                     if (mdFile.exists() && mdFile.isFile()) {
                         FileUtil.copy(mdFile, defaultLocalMdFile, true);
                     }
-                    setCodeTempletList(getCodeTempletList(defaultLocalMdFile));
-                    PluginMessage.notifyInfo("加载模板完成");
+                    List<CodeTempletModel> codeTempletList = getCodeTempletList(defaultLocalMdFile);
+                    if (codeTempletList.size() > 0) {
+                        setCodeTempletList(codeTempletList);
+                        PluginMessage.notifyInfo("加载模板完成");
+                    } else {
+                        PluginMessage.notifyError("未能成功加载模板，模板为空或模板不符合要求");
+                    }
                 } catch (Exception ex) {
                     log.error("从本地加载模板异常", ex);
                     PluginMessage.notifyError("从本地加载模板异常");
@@ -141,12 +146,13 @@ public class Util {
             List<MarkdownTableModel> mdTableList = Util.getMdTables(file);
             mdTableList.forEach(i -> {
                 CodeTempletModel codeTemplet = new CodeTempletModel();
-                List<String> rowData = i.getData().get(1);
+                List<String> rowData = i.getData().get(0);
                 codeTemplet.setTitle(rowData.get(0));
                 codeTemplet.setDescribe(rowData.get(1));
                 codeTemplet.setTag(rowData.get(2));
                 codeTemplet.setPeople(rowData.get(3));
                 codeTemplet.setVersion(rowData.get(4));
+                codeTemplet.setCodeType(i.getType());
                 codeTemplet.setCodeTemplet(i.getCodetemplet());
                 codeTempletList.add(codeTemplet);
             });
@@ -163,58 +169,106 @@ public class Util {
      * @param file
      * @return
      */
+    private static List<MarkdownTableModel> getMdTables2(File file) {
+        List<MarkdownTableModel> tables = new ArrayList<>();
+        List<String> mdLines = FileUtil.readLines(file, CHARSET_UTF_8);
+        log.debug(mdLines.get(0));
+
+        MarkdownTableModel currentTable = null;
+        boolean inCodeBlock = false;
+        String currentCodeBlockType = null;
+
+        for (String line : mdLines) {
+            if (line.matches("^([|\\-])+")) {
+                if (currentTable != null && currentTable.isValid()) {
+                    tables.add(currentTable);
+                }
+                currentTable = null;
+                continue;
+            }
+
+            if (currentTable == null) {
+                currentTable = new MarkdownTableModel();
+            }
+
+            if (line.startsWith("|")) {
+                currentTable.addRow(line);
+            } else if (isCodeBlockStart(line)) {
+                inCodeBlock = true;
+                currentCodeBlockType = getCodeBlockType(line);
+                currentTable.addType(currentCodeBlockType);
+            } else if (isCodeBlockEnd(line) && inCodeBlock) {
+                inCodeBlock = false;
+                currentCodeBlockType = null;
+            } else if (inCodeBlock) {
+                currentTable.addCodeTemplet(line, currentCodeBlockType);
+            }
+        }
+
+        if (currentTable != null && currentTable.isValid()) {
+            tables.add(currentTable);
+        }
+
+        return tables;
+    }
+
+
     private static List<MarkdownTableModel> getMdTables(File file) {
         List<MarkdownTableModel> tables = new ArrayList<>();
         List<String> mdLines = FileUtil.readLines(file, CHARSET_UTF_8);
         log.debug(mdLines.get(0));
 
+
         // 查找md所有的分隔线
-        List<Integer> separatorIndices = new ArrayList<>();
+        Map<Integer, Integer> separatorIndices = new LinkedHashMap<>();
+        int start = 0;
         for (int i = 0; i < mdLines.size(); i++) {
             if (mdLines.get(i).matches("^(\\||\\-)+$")) {
-                separatorIndices.add(i);
+                i++;
+                separatorIndices.put(start, i);
+                start = i;
             }
         }
-        MarkdownTableModel currentTable = null;
-        Integer startIndex = 0, endIndex = 0;
-        boolean inCodeBlock = false;
-        for (Integer i : separatorIndices) {
-            endIndex = (i + 1);
-            List<String> table = mdLines.subList(startIndex, endIndex);
-            for (String l : table) {
-                if (null == l) {
-                    continue;
-                }
-                if (l.startsWith("|")) {
-                    // 如果当前行以 "|" 开头，则认为是表格的一行
-                    if (currentTable == null) {
-                        // 如果当前没有找到表格，则新建一个表格
-                        currentTable = new MarkdownTableModel();
-                    }
-                    currentTable.addRow(l);
-                } else if (l.startsWith("```") && l.endsWith("java")) {
-                    // 如果当前行以 ```java 开头，则认为进入代码块
-                    inCodeBlock = true;
-                } else if (l.equals("```") && inCodeBlock) {
-                    // 如果当前行为 ```，则认为离开代码块
-                    inCodeBlock = false;
-                } else if (l.startsWith("---") || l.startsWith("***")) {
-                    // 如果当前行为分割线，则认为当前表格结束
-                    if (currentTable != null && currentTable.isValid()) {
-                        // 如果当前表格是有效的，则添加到表格列表中
-                        tables.add(currentTable);
-                    }
-                    currentTable = null;
-                } else {
-                    // 其他情况，认为当前不是表格的一行
-                    if (currentTable != null && inCodeBlock) {
-                        // 如果当前已找到表格，则将其添加到表格中
-                        currentTable.addCodeTemplet(l);
-                    }
-                }
-            }
-            startIndex = endIndex;
-        }
+
+
+        separatorIndices.forEach((k, v) -> {
+            List<String> tableLines = mdLines.subList(k, v);
+            int headLine = IntStream.range(0, tableLines.size())
+                    .filter(j -> tableLines.get(j).contains("|"))
+                    .findFirst()
+                    .orElse(0);
+            MarkdownTableModel markdownTableModel = new MarkdownTableModel();
+            markdownTableModel.addRow(tableLines.get(headLine));
+            markdownTableModel.addRow(tableLines.get(headLine + 2));
+            int codeBlockLine = IntStream.range(headLine, tableLines.size())
+                    .filter(j -> tableLines.get(j).contains("```") && isCodeBlockStart(tableLines.get(j)))
+                    .findFirst()
+                    .orElse(0);
+            String codeBlockType = getCodeBlockType(tableLines.get(codeBlockLine));
+            markdownTableModel.addType(codeBlockType);
+            int lastCodeBlockLine = IntStream.rangeClosed(0, tableLines.size() - 1)
+                    .filter(j -> tableLines.get(j).contains("```"))
+                    .reduce((a, b) -> b)
+                    .orElse(0);
+            List<String> codeBlockLines = tableLines.subList(codeBlockLine + 1, lastCodeBlockLine);
+            markdownTableModel.addCodeTemplet(String.join("\n", codeBlockLines), "");
+            tables.add(markdownTableModel);
+        });
+
         return tables;
     }
+
+
+    private static boolean isCodeBlockStart(String line) {
+        return line.matches("^```[a-zA-Z0-9]*\\s*.*$") && !isCodeBlockEnd(line);
+    }
+
+    private static String getCodeBlockType(String line) {
+        return line.replaceAll("`", "").trim();
+    }
+
+    private static boolean isCodeBlockEnd(String line) {
+        return line.equals("```");
+    }
+
 }

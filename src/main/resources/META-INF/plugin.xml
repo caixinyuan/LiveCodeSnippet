@@ -63,15 +63,16 @@
             <reference id="openSetting" />
             <reference id="OpenCodeSnippet" />
             <reference id="OpenSearch" />
-            <reference id="TestCodeEdit" />
         </group>
         <group id="EditorPopupMenuActions" text="LiveCodeTemplet">
             <separator />
             <reference id="OpenCodeSnippet" />
             <reference id="OpenSearch" />
-            <reference id="TestCodeEdit" />
             <separator />
             <add-to-group group-id="EditorPopupMenu" anchor="last" />
         </group>
     </actions>
+
+    <depends>org.intellij.plugins.markdown</depends>
+
 </idea-plugin>

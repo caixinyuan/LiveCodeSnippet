@@ -15,6 +15,8 @@
         <rowspec value="center:max(d;4px):noGrow"/>
         <rowspec value="top:4dlu:noGrow"/>
         <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
         <colspec value="fill:d:grow"/>
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="true">
@@ -34,21 +36,44 @@
               <text value="插入代码段"/>
             </properties>
           </component>
-          <component id="1dc79" class="com.intellij.ui.EditorTextField" binding="editorCodeText" custom-create="true">
+          <grid id="d7aa1" binding="editorPanel" custom-create="true" layout-manager="FormLayout">
+            <rowspec value="center:max(d;4px):noGrow"/>
+            <colspec value="fill:d:grow"/>
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
               <forms defaultalign-horz="false" defaultalign-vert="false"/>
             </constraints>
-            <properties>
-              <autoscrolls value="true"/>
-              <enabled value="true"/>
-              <inheritsPopupMenu value="false"/>
-              <opaque value="true"/>
-              <preferredSize width="800" height="768"/>
-              <text value=""/>
-              <viewer value="true"/>
-            </properties>
-          </component>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="1dc79" class="com.intellij.ui.EditorTextField" binding="editorCodeText" custom-create="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties>
+                  <autoscrolls value="true"/>
+                  <enabled value="true"/>
+                  <inheritsPopupMenu value="false"/>
+                  <opaque value="true"/>
+                  <preferredSize width="800" height="700"/>
+                  <text value=""/>
+                  <viewer value="true"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <grid id="5b837" binding="markdownPreviewPanel" custom-create="true" layout-manager="FormLayout">
+            <rowspec value="center:d:grow"/>
+            <colspec value="fill:d:grow"/>
+            <constraints>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children/>
+          </grid>
         </children>
       </grid>
       <scrollpane id="2d7ef" binding="listScrollPane">

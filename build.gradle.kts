@@ -20,7 +20,7 @@ plugins {
 }
 
 group = "com.cxy"
-version = "1.0.2"
+version = "1.0.4"
 
 repositories {
     mavenLocal()
@@ -38,7 +38,7 @@ intellij {
     version.set("2021.3.3")
     type.set("IC") // Target IDE Platform
 
-    plugins.set(listOf(/* Plugin Dependencies */))
+    plugins.set(listOf("org.intellij.plugins.markdown"))
 }
 
 tasks {
