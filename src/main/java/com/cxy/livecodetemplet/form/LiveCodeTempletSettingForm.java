@@ -16,7 +16,7 @@ import java.util.Objects;
 
 public class LiveCodeTempletSettingForm {
     private JButton updateButton;
-    private JPanel panel1;
+    private JPanel mainJPanel;
     private JTextField pathInput;
 
 
@@ -64,7 +64,7 @@ public class LiveCodeTempletSettingForm {
     public static void showUI() {
         JFrame frame = new JFrame("LiveCodeTempletSetting");
         frame.setName("LiveCodeTempletSetting");
-        frame.setContentPane(new LiveCodeTempletSettingForm().panel1);
+        frame.setContentPane(new LiveCodeTempletSettingForm().mainJPanel);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);

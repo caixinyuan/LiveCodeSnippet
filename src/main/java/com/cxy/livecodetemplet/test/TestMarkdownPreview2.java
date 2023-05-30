@@ -1,64 +1,101 @@
 package com.cxy.livecodetemplet.test;
 
-import com.cxy.livecodetemplet.Util.UtilState;
-import com.intellij.lang.Language;
+import com.cxy.livecodetemplet.Util.MarkDownUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.fileEditor.*;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileAdapter;
-import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import org.intellij.plugins.markdown.ui.preview.MarkdownPreviewFileEditor;
+import com.intellij.openapi.fileEditor.FileEditorProvider;
+import com.intellij.ui.jcef.JBCefBrowser;
+import org.apache.commons.lang3.StringUtils;
+import org.cef.browser.CefBrowser;
+import org.cef.browser.CefFrame;
+import org.cef.browser.CefMessageRouter;
+import org.cef.callback.CefContextMenuParams;
+import org.cef.callback.CefMenuModel;
+import org.cef.callback.CefQueryCallback;
+import org.cef.handler.CefContextMenuHandlerAdapter;
+import org.cef.handler.CefMessageRouterHandlerAdapter;
 import org.intellij.plugins.markdown.ui.preview.MarkdownPreviewFileEditorProvider;
-import org.intellij.plugins.markdown.ui.preview.MarkdownTextEditorProvider;
-import org.intellij.plugins.markdown.ui.preview.html.MarkdownUtil;
-import org.intellij.plugins.markdown.ui.split.SplitTextEditorProvider;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.nio.file.Path;
 
 public class TestMarkdownPreview2 extends AnAction {
 
     @NotNull
     protected final FileEditorProvider mySecondProvider = new MarkdownPreviewFileEditorProvider();
 
+    private String selectText;
+
     @Override
     public void actionPerformed(AnActionEvent e) {
-        VirtualFile virtualFile = VirtualFileManager.getInstance().findFileByNioPath(Path.of("/home/caixy/code/Temp/LiveCodeTemplet/CodeTemplet.md"));
-        Document document = EditorFactory.getInstance().createDocument("SDSAGDJASDSADASDASD");
-
-        VirtualFile virtualFile2 = FileDocumentManager.getInstance().getFile(document);
-
-        PsiFile psiFile = PsiFileFactory.getInstance(UtilState.getInstance().getProject()).createFileFromText("MDRE", Language.findLanguageByID("JAVA"), "TTTTXTXTXTXTXTXXT");
-
-        VirtualFile virtualFile3 = psiFile.getVirtualFile();
-
         JFrame frame = new JFrame("TestMarkdownPreview");
-        JPanel jPanel = new JPanel();
-        MarkdownPreviewFileEditor markdownPreviewFileEditor = new MarkdownPreviewFileEditor(UtilState.getInstance().getProject(), virtualFile);
-        Editor editor = FileEditorManager.getInstance(UtilState.getInstance().getProject()).getSelectedTextEditor();
-        markdownPreviewFileEditor.setMainEditor(editor);
+        JBCefBrowser jbCefBrowser = JBCefBrowser.createBuilder().createBrowser();
+        jbCefBrowser.getJBCefClient().addContextMenuHandler(new MenuHandler(), jbCefBrowser.getCefBrowser());
+        jbCefBrowser.loadHTML(MarkDownUtil.getInstance().getMarkdownHtml("# Test"));
 
-        JComponent jComponent = markdownPreviewFileEditor.getComponent();
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem menuItem = new JMenuItem("Menu Item");
-        popupMenu.add(menuItem);
-        jComponent.setComponentPopupMenu(popupMenu);
 
-        jPanel.add(jComponent);
-        jComponent.setEnabled(true);
-        frame.setContentPane(jPanel);
+        //配置一个查询路由,html页面可使用 window.java({}) 和 window.javaCancel({}) 来调用此方法
+        CefMessageRouter.CefMessageRouterConfig cmrc = new CefMessageRouter.CefMessageRouterConfig("java", "javaCancel");
+        //创建查询路由
+        CefMessageRouter cmr = CefMessageRouter.create(cmrc);
+        cmr.addHandler(new CefMessageRouterHandlerAdapter() {
+            @Override
+            public boolean onQuery(CefBrowser browser, CefFrame frame, long queryId, String request, boolean persistent, CefQueryCallback callback) {
+                if (StringUtils.isNotEmpty(request)) {
+                    selectText = request;
+                }
+                return super.onQuery(browser, frame, queryId, request, persistent, callback);
+            }
+        }, true);
+
+        jbCefBrowser.getCefBrowser().getClient().addMessageRouter(cmr);
+        JComponent jbCefBrowserComponent = jbCefBrowser.getComponent();
+        frame.setContentPane(jbCefBrowserComponent);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+    }
+}
+
+
+class MenuHandler extends CefContextMenuHandlerAdapter {
+    private final static int MENU_ID_ADDTEXT = 10001;
+
+    @Override
+    public void onBeforeContextMenu(CefBrowser browser, CefFrame frame, CefContextMenuParams params, CefMenuModel model) {
+        //清除菜单项
+        model.clear();
+        //剪切、复制、粘贴
+        model.addItem(CefMenuModel.MenuId.MENU_ID_COPY, "复制");
+        model.addSeparator();
+        model.addItem(MENU_ID_ADDTEXT, "插入选定的内容");
+    }
+
+    /*
+     * @see org.cef.handler.CefContextMenuHandler#onContextMenuCommand(org.cef.browser.CefBrowser, org.cef.browser.CefFrame, org.cef.callback.CefContextMenuParams, int, int)
+     */
+    @Override
+    public boolean onContextMenuCommand(CefBrowser browser, CefFrame frame, CefContextMenuParams params, int commandId, int eventFlags) {
+        switch (commandId) {
+            case MENU_ID_ADDTEXT:
+                String script = "window.getSelection().toString();";
+                browser.executeJavaScript(script, "", 0);
+
+
+                frame.executeJavaScript("var a= window.getSelection().toString();" + "window.java({\n" +
+                        "    request: a,\n" +
+                        "    persistent:false,\n" +
+                        "    onSuccess: function(response) {\n" +
+                        "      alert(\"返回的数据:\"+response);\n" +
+                        "    },\n" +
+                        "    onFailure: function(error_code, error_message) {}\n" +
+                        "});", frame.getURL(), 0);
+
+
+                return true;
+        }
+        return false;
     }
 }

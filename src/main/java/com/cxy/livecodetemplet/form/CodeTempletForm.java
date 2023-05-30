@@ -1,9 +1,9 @@
 package com.cxy.livecodetemplet.form;
 
+import com.cxy.livecodetemplet.Util.MarkDownUtil;
 import com.cxy.livecodetemplet.Util.PluginMessage;
 import com.cxy.livecodetemplet.Util.UtilState;
 import com.cxy.livecodetemplet.model.CodeTempletModel;
-import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
@@ -20,18 +20,19 @@ import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.editor.markup.HighlighterLayer;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.ui.JBPopupMenu;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.ListSpeedSearch;
 import com.intellij.ui.SpeedSearchComparator;
 import com.intellij.ui.components.JBList;
+import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.intellij.plugins.markdown.ui.preview.MarkdownPreviewFileEditor;
+import org.cef.browser.CefBrowser;
+import org.cef.browser.CefFrame;
+import org.cef.callback.CefContextMenuParams;
+import org.cef.callback.CefMenuModel;
+import org.cef.handler.CefContextMenuHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -44,16 +45,20 @@ import java.util.List;
 
 public class CodeTempletForm {
     private JBList<CodeTempletModel> codeTagList;
-    private JPanel panel1;
+    private JPanel mainJPanel;
     private EditorTextField editorCodeText;
-    private JButton inputBUtton;
+    private JButton inputButton;
     private JScrollPane listScrollPane;
-    private JPanel panel2;
+    private JPanel snippetJPanel;
     private JPanel editorPanel;
     private JPanel markdownPreviewPanel;
-    private MarkdownPreviewFileEditor markdownPreviewFileEditor;
     private final DefaultActionGroup actionGroup = new DefaultActionGroup();
     private final Integer additionalLinesCount = 2;
+
+    private JBCefBrowser jbCefBrowser;
+
+    private final String inputButtonTextAll = "插入代码段";
+    private final String inputButtonText = "插入已选择的内容";
 
 
     public CodeTempletForm(Object value) {
@@ -74,7 +79,7 @@ public class CodeTempletForm {
                 codeTagListClick();
             }
         });
-        inputBUtton.addActionListener(e -> inputButtonClick());
+        inputButton.addActionListener(e -> inputButtonClick());
         codeTagList.setPreferredSize(new Dimension(100, codeTempletList.size() * 60));
     }
 
@@ -84,7 +89,8 @@ public class CodeTempletForm {
         }
         if (selectedItem != null) {
             if (selectedItem.getCodeTemplet() != null) {
-                editorCodeText.getDocument().setText(selectedItem.getCodeTemplet());
+                String text = selectedItem.getCodeTemplet();
+                WriteCommandAction.runWriteCommandAction(UtilState.getInstance().getProject(), () -> editorCodeText.getDocument().setText(text));
             }
         }
     }
@@ -94,26 +100,32 @@ public class CodeTempletForm {
     }
 
 
+    private void inputButtonClick() {
+        inputButtonClick(null);
+    }
+
     /**
      * 插入代码段按钮点击事件
      */
-    private void inputButtonClick() {
-        if (StringUtils.isEmpty(editorCodeText.getText())) {
-            return;
-        }
+    private void inputButtonClick(String text) {
         Editor editor = FileEditorManager.getInstance(UtilState.getInstance().getProject()).getSelectedTextEditor();
         if (editor != null) {
             WriteCommandAction.runWriteCommandAction(UtilState.getInstance().getProject(), () -> {
                 CaretModel caretModel = editor.getCaretModel();
                 int offset = caretModel.getOffset();
                 Document document = editor.getDocument();
-                String insertText = editorCodeText.getText();
-                if (editorCodeText.getEditor() != null && editorCodeText.getEditor().getSelectionModel().hasSelection(true)) {
-                    insertText = editorCodeText.getEditor().getSelectionModel().getSelectedText();
-                }
-                if (StringUtils.isNotEmpty(insertText)) {
-                    document.insertString(offset, insertText);
-                    editor.getSelectionModel().setSelection(offset, offset + insertText.length());
+                if (StringUtils.isNotEmpty(text)) {
+                    document.insertString(offset, text);
+                    editor.getSelectionModel().setSelection(offset, offset + text.length());
+                } else {
+                    String insertText = editorCodeText.getText();
+                    if (editorCodeText.getEditor() != null && editorCodeText.getEditor().getSelectionModel().hasSelection(true)) {
+                        insertText = editorCodeText.getEditor().getSelectionModel().getSelectedText();
+                    }
+                    if (StringUtils.isNotEmpty(insertText)) {
+                        document.insertString(offset, insertText);
+                        editor.getSelectionModel().setSelection(offset, offset + insertText.length());
+                    }
                 }
             });
             Arrays.stream(JFrame.getFrames()).forEach(i -> {
@@ -131,25 +143,21 @@ public class CodeTempletForm {
      */
     private void codeTagListClick() {
         if (StringUtils.equals("markdown", codeTagList.getSelectedValue().getCodeType())) {
-            PsiFile psiFile = PsiFileFactory.getInstance(UtilState.getInstance().getProject()).createFileFromText("MDRE", Language.findLanguageByID("JAVA"), codeTagList.getSelectedValue().getCodeTemplet());
-            VirtualFile virtualFile = psiFile.getVirtualFile();
-            markdownPreviewFileEditor = new MarkdownPreviewFileEditor(UtilState.getInstance().getProject(), virtualFile);
-            markdownPreviewFileEditor.setMainEditor(FileEditorManager.getInstance(UtilState.getInstance().getProject()).getSelectedTextEditor());
+            createJBCefBrowser();
+            jbCefBrowser.loadHTML(MarkDownUtil.getInstance().getMarkdownHtml(codeTagList.getSelectedValue().getCodeTemplet()));
             markdownPreviewPanel.removeAll();
-            JComponent jComponent = markdownPreviewFileEditor.getPreferredFocusedComponent();
-            JBPopupMenu jbPopupMenu = new JBPopupMenu();
-            jbPopupMenu.add("1");
-            jbPopupMenu.add(new JMenuItem("ss"));
-            jComponent.setComponentPopupMenu(jbPopupMenu);
-
-            markdownPreviewPanel.add(jComponent);
-            markdownPreviewPanel.setVisible(true);
-            editorPanel.removeAll();
-            editorPanel.setVisible(false);
-            jComponent.requestFocusInWindow();
+            markdownPreviewPanel.add(jbCefBrowser.getComponent());
+            if (!markdownPreviewPanel.isValid()) {
+                markdownPreviewPanel.setVisible(true);
+                editorPanel.setVisible(false);
+                inputButton.setVisible(false);
+            }
         } else {
-            editorPanel.setVisible(true);
-            markdownPreviewPanel.setVisible(false);
+            if (markdownPreviewPanel.isValid()) {
+                inputButton.setVisible(true);
+                editorPanel.setVisible(true);
+                markdownPreviewPanel.setVisible(false);
+            }
             setEditorCodeText();
         }
     }
@@ -266,7 +274,9 @@ public class CodeTempletForm {
     }
 
     private void createMarkdownPreviewPanel() {
-        markdownPreviewPanel = new JPanel(new FlowLayout());
+        markdownPreviewPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        markdownPreviewPanel.setMaximumSize(new Dimension(2147483647, 2147483647));
+        markdownPreviewPanel.setMinimumSize(new Dimension(0, 0));
     }
 
 
@@ -322,9 +332,9 @@ public class CodeTempletForm {
                             public void selectionChanged(@NotNull SelectionEvent e) {
                                 SelectionListener.super.selectionChanged(e);
                                 if (e.getEditor().getSelectionModel().hasSelection()) {
-                                    inputBUtton.setText("插入已选择的内容");
+                                    inputButton.setText(inputButtonText);
                                 } else {
-                                    inputBUtton.setText("插入代码段");
+                                    inputButton.setText(inputButtonTextAll);
                                 }
                             }
                         });
@@ -365,6 +375,36 @@ public class CodeTempletForm {
         // 创建 ListSpeedSearch 对象
         ListSpeedSearch<CodeTempletModel> speedSearch = new ListSpeedSearch<>(codeTagList);
         speedSearch.setComparator(new SpeedSearchComparator());
+    }
+
+
+    private void createJBCefBrowser() {
+        if (jbCefBrowser == null) {
+            jbCefBrowser = JBCefBrowser.createBuilder().createBrowser();
+            jbCefBrowser.getJBCefClient().addContextMenuHandler(new CefContextMenuHandlerAdapter() {
+                @Override
+                public void onBeforeContextMenu(CefBrowser browser, CefFrame frame, CefContextMenuParams params, CefMenuModel model) {
+                    super.onBeforeContextMenu(browser, frame, params, model);
+                    model.addSeparator();
+                    model.addItem(10086, "插入选定的内容");
+                }
+
+                @Override
+                public boolean onContextMenuCommand(CefBrowser browser, CefFrame frame, CefContextMenuParams params, int commandId, int eventFlags) {
+                    switch (commandId) {
+                        case 10086:
+                            String selectText = params.getSelectionText();
+                            if (StringUtils.isNotEmpty(selectText)) {
+                                SwingUtilities.invokeLater(() -> {
+                                    inputButtonClick(selectText);
+                                });
+                            }
+                            break;
+                    }
+                    return super.onContextMenuCommand(browser, frame, params, commandId, eventFlags);
+                }
+            }, jbCefBrowser.getCefBrowser());
+        }
     }
 
 
@@ -412,7 +452,7 @@ public class CodeTempletForm {
     public static void showUI() {
         JFrame frame = new JFrame("CodeTemplet");
         frame.setName("CodeTemplet");
-        JPanel jPanel = new CodeTempletForm(null).panel1;
+        JPanel jPanel = new CodeTempletForm(null).mainJPanel;
         frame.setContentPane(jPanel);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();
@@ -423,7 +463,7 @@ public class CodeTempletForm {
     public static void showUI(Object value) {
         JFrame frame = new JFrame("CodeTemplet");
         frame.setName("CodeTemplet");
-        frame.setContentPane(new CodeTempletForm(value).panel1);
+        frame.setContentPane(new CodeTempletForm(value).mainJPanel);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);

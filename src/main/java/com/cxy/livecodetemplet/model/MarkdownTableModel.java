@@ -9,66 +9,49 @@ import java.util.List;
  * markdown 表格分析类
  */
 public class MarkdownTableModel {
-    private List<String> header;
-    private String type;
-    private List<List<String>> data;
-    private String codetemplet;
 
-    public MarkdownTableModel() {
-        this.header = new ArrayList<>();
-        this.type = "";
-        this.data = new ArrayList<>();
-        this.codetemplet = "";
+    private List<String> TitleRow;
+
+    private String CodeBlockType;
+
+    private String CodeBlock;
+
+
+    public List<String> getTitleRow() {
+        return this.TitleRow;
     }
 
-    public void addRow(String row) {
-        String[] columns = row.split("\\|");
-        List<String> rowData = new ArrayList<>();
-        for (int i = 1; i < columns.length; i++) {
-            rowData.add(columns[i].trim());
-        }
-        if (header.isEmpty()) {  // 如果当前还没有表头，则认为当前行为表头
-            header = rowData;
-        } else {
-            data.add(rowData);
-        }
+    public String getCodeBlockType() {
+        return this.CodeBlockType;
     }
 
-    public void addCodeTemplet(String line, String codeType) {
-        if (!StrUtil.equals(line, "```")) {
-            codetemplet += line + "\n";
-        }
+    public String getCodeBlock() {
+        return this.CodeBlock;
     }
 
-    public void addType(String type) {
-        this.type = type;
+    public void setTitleRow(List<String> titleRow) {
+        this.TitleRow = titleRow;
     }
 
-    public String getType() {
-        return this.type;
+    public void setCodeBlockType(String codeBlockType) {
+        this.CodeBlockType = codeBlockType;
     }
 
-    public List<List<String>> getData() {
-        return this.data;
+    public void setCodeBlock(String codeBlock) {
+        this.CodeBlock = codeBlock;
     }
 
-    public String getCodetemplet() {
-        return this.codetemplet;
-    }
 
     public boolean isValid() {
-        return !header.isEmpty() && !data.isEmpty();
+        return !TitleRow.isEmpty();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-
-        sb.append("Codetemplet: ").append(codetemplet).append("\n");
-        sb.append("Header: ").append(header).append("\n");
-        sb.append("Data: ").append(data).append("\n");
-        sb.append("Type: ").append(type).append("\n");
-
+        sb.append("TitleRow: ").append(TitleRow).append("\n");
+        sb.append("CodeBlockType: ").append(CodeBlockType).append("\n");
+        sb.append("CodeBlock: ").append(CodeBlock).append("\n");
         return sb.toString();
     }
 }

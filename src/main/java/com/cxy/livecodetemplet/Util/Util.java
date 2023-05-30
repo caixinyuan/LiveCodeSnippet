@@ -1,6 +1,7 @@
 package com.cxy.livecodetemplet.Util;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.cxy.livecodetemplet.model.CodeTempletModel;
 import com.cxy.livecodetemplet.model.MarkdownTableModel;
@@ -143,17 +144,17 @@ public class Util {
     public static List<CodeTempletModel> getCodeTempletList(File file) {
         try {
             List<CodeTempletModel> codeTempletList = new ArrayList<>();
-            List<MarkdownTableModel> mdTableList = Util.getMdTables(file);
+            List<MarkdownTableModel> mdTableList = MarkDownUtil.getInstance().getMdTables(file);
             mdTableList.forEach(i -> {
                 CodeTempletModel codeTemplet = new CodeTempletModel();
-                List<String> rowData = i.getData().get(0);
-                codeTemplet.setTitle(rowData.get(0));
-                codeTemplet.setDescribe(rowData.get(1));
-                codeTemplet.setTag(rowData.get(2));
-                codeTemplet.setPeople(rowData.get(3));
-                codeTemplet.setVersion(rowData.get(4));
-                codeTemplet.setCodeType(i.getType());
-                codeTemplet.setCodeTemplet(i.getCodetemplet());
+                List<String> rowData = i.getTitleRow();
+                codeTemplet.setTitle(rowData.get(1));
+                codeTemplet.setDescribe(rowData.get(2));
+                codeTemplet.setTag(rowData.get(3));
+                codeTemplet.setPeople(rowData.get(4));
+                codeTemplet.setVersion(rowData.get(5));
+                codeTemplet.setCodeType(i.getCodeBlockType());
+                codeTemplet.setCodeTemplet(i.getCodeBlock());
                 codeTempletList.add(codeTemplet);
             });
             return codeTempletList;
@@ -163,112 +164,6 @@ public class Util {
         return new ArrayList();
     }
 
-    /**
-     * 解析MarkDown文件
-     *
-     * @param file
-     * @return
-     */
-    private static List<MarkdownTableModel> getMdTables2(File file) {
-        List<MarkdownTableModel> tables = new ArrayList<>();
-        List<String> mdLines = FileUtil.readLines(file, CHARSET_UTF_8);
-        log.debug(mdLines.get(0));
-
-        MarkdownTableModel currentTable = null;
-        boolean inCodeBlock = false;
-        String currentCodeBlockType = null;
-
-        for (String line : mdLines) {
-            if (line.matches("^([|\\-])+")) {
-                if (currentTable != null && currentTable.isValid()) {
-                    tables.add(currentTable);
-                }
-                currentTable = null;
-                continue;
-            }
-
-            if (currentTable == null) {
-                currentTable = new MarkdownTableModel();
-            }
-
-            if (line.startsWith("|")) {
-                currentTable.addRow(line);
-            } else if (isCodeBlockStart(line)) {
-                inCodeBlock = true;
-                currentCodeBlockType = getCodeBlockType(line);
-                currentTable.addType(currentCodeBlockType);
-            } else if (isCodeBlockEnd(line) && inCodeBlock) {
-                inCodeBlock = false;
-                currentCodeBlockType = null;
-            } else if (inCodeBlock) {
-                currentTable.addCodeTemplet(line, currentCodeBlockType);
-            }
-        }
-
-        if (currentTable != null && currentTable.isValid()) {
-            tables.add(currentTable);
-        }
-
-        return tables;
-    }
-
-
-    private static List<MarkdownTableModel> getMdTables(File file) {
-        List<MarkdownTableModel> tables = new ArrayList<>();
-        List<String> mdLines = FileUtil.readLines(file, CHARSET_UTF_8);
-        log.debug(mdLines.get(0));
-
-
-        // 查找md所有的分隔线
-        Map<Integer, Integer> separatorIndices = new LinkedHashMap<>();
-        int start = 0;
-        for (int i = 0; i < mdLines.size(); i++) {
-            if (mdLines.get(i).matches("^(\\||\\-)+$")) {
-                i++;
-                separatorIndices.put(start, i);
-                start = i;
-            }
-        }
-
-
-        separatorIndices.forEach((k, v) -> {
-            List<String> tableLines = mdLines.subList(k, v);
-            int headLine = IntStream.range(0, tableLines.size())
-                    .filter(j -> tableLines.get(j).contains("|"))
-                    .findFirst()
-                    .orElse(0);
-            MarkdownTableModel markdownTableModel = new MarkdownTableModel();
-            markdownTableModel.addRow(tableLines.get(headLine));
-            markdownTableModel.addRow(tableLines.get(headLine + 2));
-            int codeBlockLine = IntStream.range(headLine, tableLines.size())
-                    .filter(j -> tableLines.get(j).contains("```") && isCodeBlockStart(tableLines.get(j)))
-                    .findFirst()
-                    .orElse(0);
-            String codeBlockType = getCodeBlockType(tableLines.get(codeBlockLine));
-            markdownTableModel.addType(codeBlockType);
-            int lastCodeBlockLine = IntStream.rangeClosed(0, tableLines.size() - 1)
-                    .filter(j -> tableLines.get(j).contains("```"))
-                    .reduce((a, b) -> b)
-                    .orElse(0);
-            List<String> codeBlockLines = tableLines.subList(codeBlockLine + 1, lastCodeBlockLine);
-            markdownTableModel.addCodeTemplet(String.join("\n", codeBlockLines), "");
-            tables.add(markdownTableModel);
-        });
-
-        return tables;
-    }
-
-
-    private static boolean isCodeBlockStart(String line) {
-        return line.matches("^```[a-zA-Z0-9]*\\s*.*$") && !isCodeBlockEnd(line);
-    }
-
-    private static String getCodeBlockType(String line) {
-        return line.replaceAll("`", "").trim();
-    }
-
-    private static boolean isCodeBlockEnd(String line) {
-        return line.equals("```");
-    }
 
 }
+

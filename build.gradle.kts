@@ -1,11 +1,11 @@
 buildscript {
     repositories {
-        maven { url=uri("https://maven.aliyun.com/repository/public/") }
+        maven { url = uri("https://maven.aliyun.com/repository/public/") }
         mavenCentral()
-        maven { url=uri("https://plugins.gradle.org/m2/") }
-        maven { url=uri("https://oss.sonatype.org/content/repositories/releases/") }
-        maven { url=uri("https://dl.bintray.com/jetbrains/intellij-plugin-service") }
-        maven { url=uri("https://dl.bintray.com/jetbrains/intellij-third-party-dependencies/") }
+        maven { url = uri("https://plugins.gradle.org/m2/") }
+        maven { url = uri("https://oss.sonatype.org/content/repositories/releases/") }
+        maven { url = uri("https://dl.bintray.com/jetbrains/intellij-plugin-service") }
+        maven { url = uri("https://dl.bintray.com/jetbrains/intellij-third-party-dependencies/") }
     }
     dependencies {
         classpath("org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.7.2")
@@ -18,7 +18,6 @@ plugins {
     id("java")
     id("org.jetbrains.intellij") version "1.13.0"
 }
-
 group = "com.cxy"
 version = "1.0.4"
 
@@ -28,8 +27,8 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation ("cn.hutool:hutool-core:5.8.9")
-    implementation ("cn.hutool:hutool-http:5.8.9")
+    implementation("cn.hutool:hutool-core:5.8.11")
+    implementation("cn.hutool:hutool-http:5.8.11")
 }
 
 // Configure Gradle IntelliJ Plugin
