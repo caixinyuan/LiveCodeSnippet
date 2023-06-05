@@ -14,12 +14,17 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    LiveCodeTemplet 是一个能帮助你快速查找及插入代码片段的插件。你只需使用Ctrl+Q打开搜索界面或使用Ctrl+Shift+Q直接打开代码片段界面，
-    就可以直接插入一段代码。<br>
-    LiveCodeTemplet 使用markdown文件做为代码片段模板,既可以在本地使用，也可以与多人共同分享一套模板。
+    LiveCodeTemplate is a plugin that helps you quickly find and insert code snippets. You just need to use Ctrl+Q to open the search interface or Ctrl+Shift+Q to directly open the code snippet interface, and you can directly insert a piece of code.
+    LiveCodeTemplate uses markdown files as code snippet templates, which can be used locally or shared with multiple people.
+    <br>Sample template: <a href="https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md">https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md</a>
+    <br>View More On : <a href="https://github.com/caixinyuan/LiveCodeTemplet">https://github.com/caixinyuan/LiveCodeTemplet</a>
     <br>
-    示例模板:https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.lmd
-  ]]></description>
+    <br>LiveCodeTemplet 是一个能帮助你快速查找及插入代码片段的插件。你只需使用Ctrl+Q打开搜索界面或使用Ctrl+Shift+Q直接打开代码片段界面，
+    就可以直接插入一段代码。
+    <br>LiveCodeTemplet 使用markdown文件做为代码片段模板,既可以在本地使用，也可以与多人共同分享一套模板。
+    <br>示例模板: <a href="https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md">https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md</a>
+    <br>了解更多： : <a href="https://github.com/caixinyuan/LiveCodeTemplet">https://github.com/caixinyuan/LiveCodeTemplet</a>
+]]></description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->

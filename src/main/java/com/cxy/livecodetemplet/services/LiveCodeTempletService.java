@@ -24,13 +24,6 @@ public class LiveCodeTempletService implements Disposable {
         super();
         //从本地读取代码片段
         loadMdTemplet();
-//        TemplateImpl template = new TemplateImpl("tmKey", "codeString", "groupName");
-//        template.setToReformat(true);
-//        template.setGroupName("groupName");
-//        template.setDescription("");
-//        template.createContext().setEnabled(LiveCodeTempletContextType.getContext(), true);
-        //TemplateSettings.getInstance().addTemplate(template);
-        //TemplateSettings.getInstance().getTemplateById()
     }
 
     //加载本地代码模板

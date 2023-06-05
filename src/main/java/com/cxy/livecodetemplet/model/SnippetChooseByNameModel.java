@@ -90,7 +90,12 @@ public class SnippetChooseByNameModel implements ChooseByNameModel {
                     descriptionLabel.setForeground(fg);
                     descriptionLabel.setBorder(JBUI.Borders.emptyLeft(15));
                     panel.add(descriptionLabel, BorderLayout.EAST);
-                    panel.setToolTipText(description);
+
+                    if (description.length() > 1000){
+                        panel.setToolTipText("....................");
+                    }else {
+                        panel.setToolTipText(description);
+                    }
                 }
             } else {
                 // E.g. "..." item

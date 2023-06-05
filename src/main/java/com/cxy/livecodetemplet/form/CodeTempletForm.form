@@ -56,7 +56,7 @@
                   <enabled value="true"/>
                   <inheritsPopupMenu value="false"/>
                   <opaque value="true"/>
-                  <preferredSize width="800" height="700"/>
+                  <preferredSize width="800" height="750"/>
                   <text value=""/>
                   <viewer value="true"/>
                 </properties>
@@ -70,7 +70,10 @@
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
               <forms defaultalign-vert="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <alignmentX value="0.2"/>
+              <alignmentY value="0.2"/>
+            </properties>
             <border type="none"/>
             <children/>
           </grid>
@@ -103,34 +106,7 @@
               <focusCycleRoot value="false"/>
               <layoutOrientation value="0"/>
               <maximumSize width="18" height="2147483647"/>
-              <model>
-                <item value="1"/>
-                <item value="2"/>
-                <item value="3"/>
-                <item value="4"/>
-                <item value="4"/>
-                <item value="55"/>
-                <item value="6"/>
-                <item value="7"/>
-                <item value="78"/>
-                <item value="8"/>
-                <item value="9"/>
-                <item value="9"/>
-                <item value="9"/>
-                <item value="1"/>
-                <item value="2"/>
-                <item value="3"/>
-                <item value="4"/>
-                <item value="4"/>
-                <item value="55"/>
-                <item value="6"/>
-                <item value="7"/>
-                <item value="78"/>
-                <item value="8"/>
-                <item value="9"/>
-                <item value="9"/>
-                <item value="9"/>
-              </model>
+              <model/>
               <preferredSize width="200" height="29"/>
               <requestFocusEnabled value="false"/>
               <selectionMode value="0"/>

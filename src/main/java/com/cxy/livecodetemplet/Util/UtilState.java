@@ -14,7 +14,7 @@ public class UtilState {
     private List<CodeTempletModel> codeTempletList = new ArrayList<>();
 
     private Project project;
-    private final FileType javaFileType = FileTypeManager.getInstance().getFileTypeByExtension("java");
+    private FileType javaFileType = null;
 
     private UtilState() {
     }
@@ -51,6 +51,9 @@ public class UtilState {
     }
 
     public FileType getJavaFileType() {
+        if (javaFileType == null) {
+            javaFileType = FileTypeManager.getInstance().getFileTypeByExtension("java");
+        }
         return javaFileType;
     }
 

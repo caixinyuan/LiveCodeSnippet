@@ -33,12 +33,7 @@ public class Util {
 
     public final static String defaultRemoteURL = "https://raw.githubusercontent.com/caixinyuan/LiveCodeTemplet/main/CodeTemplet.md";
 
-    private static final Logger log = Logger.getInstance(LiveCodeTempletService.class);
-
-
-    public static Frame getJFrameByName(String name) {
-        return Arrays.stream(JFrame.getFrames()).filter(i -> StringUtils.equals(i.getTitle(), name)).findFirst().orElse(null);
-    }
+    private static final Logger log = Logger.getInstance(Util.class);
 
 
     /**

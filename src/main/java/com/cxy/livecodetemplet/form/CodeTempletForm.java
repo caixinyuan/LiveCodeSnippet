@@ -6,6 +6,7 @@ import com.cxy.livecodetemplet.Util.UtilState;
 import com.cxy.livecodetemplet.model.CodeTempletModel;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
@@ -60,6 +61,8 @@ public class CodeTempletForm {
     private final String inputButtonTextAll = "插入代码段";
     private final String inputButtonText = "插入已选择的内容";
 
+    private static final Logger log = Logger.getInstance(CodeTempletForm.class);
+
 
     public CodeTempletForm(Object value) {
         List<CodeTempletModel> codeTempletList = UtilState.getInstance().getCodeTempletList();
@@ -73,26 +76,32 @@ public class CodeTempletForm {
             codeTagList.setSelectedIndex(0);
             codeTagListClick();
         }
-        codeTagList.setCellRenderer(getListCellRendererComponent());
+        DefaultListCellRenderer defaultListCellRenderer = getListCellRendererComponent();
+        codeTagList.setCellRenderer(defaultListCellRenderer);
         codeTagList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 codeTagListClick();
             }
         });
         inputButton.addActionListener(e -> inputButtonClick());
-        codeTagList.setPreferredSize(new Dimension(100, codeTempletList.size() * 60));
+        codeTagList.setPreferredSize(new Dimension(100, codeTempletList.size() * 46));
     }
 
     private void setEditorCodeText(CodeTempletModel selectedItem) {
-        if (selectedItem == null) {
-            selectedItem = codeTagList.getSelectedValue();
-        }
-        if (selectedItem != null) {
-            if (selectedItem.getCodeTemplet() != null) {
-                String text = selectedItem.getCodeTemplet();
-                WriteCommandAction.runWriteCommandAction(UtilState.getInstance().getProject(), () -> editorCodeText.getDocument().setText(text));
+        try {
+            if (selectedItem == null) {
+                selectedItem = codeTagList.getSelectedValue();
             }
+            if (selectedItem != null) {
+                if (selectedItem.getCodeTemplet() != null) {
+                    String text = selectedItem.getCodeTemplet();
+                    WriteCommandAction.runWriteCommandAction(UtilState.getInstance().getProject(), () -> editorCodeText.getDocument().setText(text));
+                }
+            }
+        } catch (Exception ex) {
+            log.error("set Text Error", ex);
         }
+
     }
 
     private void setEditorCodeText() {
@@ -419,15 +428,16 @@ public class CodeTempletForm {
                 final Color bg = isSelected ? UIUtil.getListSelectionBackground(true) : UIUtil.getListBackground();
                 panel.setBackground(bg);
                 if (value instanceof CodeTempletModel) {
+                    CodeTempletModel valueModel = (CodeTempletModel) value;
                     final Color fg;
                     fg = isSelected ? JBUI.CurrentTheme.List.Selection.foreground(true) : UIUtil.getListForeground();
-                    final JLabel actionLabel = new JLabel(((CodeTempletModel) value).getTitle(), null, LEFT);
+                    final JLabel actionLabel = new JLabel(valueModel.getTitle(), null, LEFT);
                     actionLabel.setBackground(bg);
                     actionLabel.setForeground(fg);
                     actionLabel.setFont(actionLabel.getFont().deriveFont(Font.BOLD));
                     actionLabel.setBorder(JBUI.Borders.emptyLeft(4));
                     panel.add(actionLabel, BorderLayout.BEFORE_FIRST_LINE);
-                    String description = ((CodeTempletModel) value).getDescribe();
+                    String description = valueModel.getDescribe();
                     if (description != null) {
                         // truncate long descriptions
                         final String normalizedDesc;
@@ -441,7 +451,12 @@ public class CodeTempletForm {
                         descriptionLabel.setForeground(fg);
                         descriptionLabel.setBorder(JBUI.Borders.emptyLeft(15));
                         panel.add(descriptionLabel, BorderLayout.AFTER_LAST_LINE);
-                        panel.setToolTipText(((CodeTempletModel) value).getCodeTemplet());
+                        if (valueModel.getCodeTemplet().length() > 1000) {
+                            panel.setToolTipText(".....................");
+                        } else {
+                            panel.setToolTipText(valueModel.getCodeTemplet());
+                        }
+
                     }
                 }
                 return panel;
