@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.cxy.livecodesnippet.form.CodeSnippetForm">
+  <grid id="27dc6" binding="mainJPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties>
+      <enabled value="false"/>
+      <preferredSize width="1000" height="600"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="f29fa" binding="snippetJPanel" layout-manager="FormLayout">
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <rowspec value="top:4dlu:noGrow"/>
+        <rowspec value="center:max(d;4px):noGrow"/>
+        <colspec value="fill:d:grow"/>
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="true">
+            <maximum-size width="2147483647" height="2147483647"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="e5fc7" class="javax.swing.JButton" binding="inputButton">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-vert="false"/>
+            </constraints>
+            <properties>
+              <preferredSize width="-1" height="30"/>
+              <text value="插入代码段"/>
+            </properties>
+          </component>
+          <grid id="d7aa1" binding="editorPanel" custom-create="true" layout-manager="FormLayout">
+            <rowspec value="center:max(d;4px):noGrow"/>
+            <colspec value="fill:d:grow"/>
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-horz="false" defaultalign-vert="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="1dc79" class="com.intellij.ui.EditorTextField" binding="editorCodeText" custom-create="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false"/>
+                  <forms/>
+                </constraints>
+                <properties>
+                  <autoscrolls value="true"/>
+                  <enabled value="true"/>
+                  <inheritsPopupMenu value="false"/>
+                  <opaque value="true"/>
+                  <preferredSize width="800" height="750"/>
+                  <text value=""/>
+                  <viewer value="true"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <grid id="5b837" binding="markdownPreviewPanel" custom-create="true" layout-manager="FormLayout">
+            <rowspec value="center:d:grow"/>
+            <colspec value="fill:d:grow"/>
+            <constraints>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-vert="false"/>
+            </constraints>
+            <properties>
+              <alignmentX value="0.2"/>
+              <alignmentY value="0.2"/>
+            </properties>
+            <border type="none"/>
+            <children/>
+          </grid>
+        </children>
+      </grid>
+      <scrollpane id="2d7ef" binding="listScrollPane">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <minimum-size width="200" height="100"/>
+            <preferred-size width="200" height="2147483647"/>
+            <maximum-size width="2147483647" height="2147483647"/>
+          </grid>
+        </constraints>
+        <properties>
+          <autoscrolls value="true"/>
+          <enabled value="false"/>
+          <horizontalScrollBarPolicy value="32"/>
+          <inheritsPopupMenu value="true"/>
+          <preferredSize width="-1" height="-1"/>
+          <verticalScrollBarPolicy value="22"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="e6135" class="com.intellij.ui.components.JBList" binding="codeTagList" custom-create="true">
+            <constraints/>
+            <properties>
+              <enabled value="true"/>
+              <fixedCellHeight value="-1"/>
+              <fixedCellWidth value="-1"/>
+              <focusCycleRoot value="false"/>
+              <layoutOrientation value="0"/>
+              <maximumSize width="18" height="2147483647"/>
+              <model/>
+              <preferredSize width="200" height="29"/>
+              <requestFocusEnabled value="false"/>
+              <selectionMode value="0"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+    </children>
+  </grid>
+</form>

@@ -19,7 +19,7 @@ plugins {
     id("org.jetbrains.intellij") version "1.13.0"
 }
 group = "com.cxy"
-version = "1.0.6"
+version = "1.0.7"
 
 repositories {
     mavenLocal()
@@ -29,6 +29,7 @@ repositories {
 dependencies {
     implementation("cn.hutool:hutool-core:5.8.11")
     implementation("cn.hutool:hutool-http:5.8.11")
+    implementation("org.xerial:sqlite-jdbc:3.42.0.0")
 }
 
 // Configure Gradle IntelliJ Plugin
@@ -47,7 +48,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("213")
-        untilBuild.set("223.*")
+        untilBuild.set("231.*")
     }
 
     signPlugin {

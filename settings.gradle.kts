@@ -1,1 +1,1 @@
-rootProject.name = "LiveCodeTemplet"
+rootProject.name = "LiveCodeSnippet"

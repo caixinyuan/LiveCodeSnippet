@@ -1,12 +1,12 @@
-# LiveCodeTemplet
-LiveCodeTemplet 是一个能帮助你快速查找及插入代码片段的插件。你只需使用Ctrl+Q打开搜索界面或使用Ctrl+Shift+Q直接打开代码片段界面，就可以直接插入一段代码。
+# LiveCodeSnippet
+LiveCodeSnippet 是一个能帮助你快速查找及插入代码片段的插件。你只需使用Ctrl+Q打开搜索界面或使用Ctrl+Shift+Q直接打开代码片段界面，就可以直接插入一段代码。
 
 #### 使用方法：
 ​	在IDEA的工具栏中点击LiveCodeTemplet->LiveCodeTemplet配置 来配置代码模板的地址，地址支持远程HTTP和本地地址。
 
 ###### 地址示例：
 
-1. https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md
+1. https://github.com/caixinyuan/LiveCodeSnippet/blob/main/CodeTemplet.md
 2. /home/CodeTemplet.md
 
 ####  模板示例

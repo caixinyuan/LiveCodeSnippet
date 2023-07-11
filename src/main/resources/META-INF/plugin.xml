@@ -1,29 +1,29 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin require-restart="true">
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.cxy.LiveCodeTemplet</id>
+    <id>com.cxy.LiveCodeSnippet</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>LiveCodeTemplet</name>
+    <name>LiveCodeSnippet</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="maonenbei@126.com" url="https://github.com/caixinyuan/LiveCodeTemplet">Caixy</vendor>
+    <vendor email="maonenbei@126.com" url="https://github.com/caixinyuan/LiveCodeSnippet">Caixy</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    LiveCodeTemplate is a plugin that helps you quickly find and insert code snippets. You just need to use Ctrl+Q to open the search interface or Ctrl+Shift+Q to directly open the code snippet interface, and you can directly insert a piece of code.
-    LiveCodeTemplate uses markdown files as code snippet templates, which can be used locally or shared with multiple people.
-    <br>Sample template: <a href="https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md">https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md</a>
-    <br>View More On : <a href="https://github.com/caixinyuan/LiveCodeTemplet">https://github.com/caixinyuan/LiveCodeTemplet</a>
+    LiveCodeSnippet is a plugin that helps you quickly find and insert code snippets. You just need to use Ctrl+Q to open the search interface or Ctrl+Shift+Q to directly open the code snippet interface, and you can directly insert a piece of code.
+    LiveCodeSnippet uses markdown files as code snippet templates, which can be used locally or shared with multiple people.
+    <br>Sample template: <a href="https://github.com/caixinyuan/LiveCodeSnippet/blob/main/CodeTemplet.md">https://github.com/caixinyuan/LiveCodeSnippet/blob/main/CodeTemplet.md</a>
+    <br>View More On : <a href="https://github.com/caixinyuan/LiveCodeSnippet">https://github.com/caixinyuan/LiveCodeSnippet</a>
     <br>
-    <br>LiveCodeTemplet 是一个能帮助你快速查找及插入代码片段的插件。你只需使用Ctrl+Q打开搜索界面或使用Ctrl+Shift+Q直接打开代码片段界面，
+    <br>LiveCodeSnippet 是一个能帮助你快速查找及插入代码片段的插件。你只需使用Ctrl+Q打开搜索界面或使用Ctrl+Shift+Q直接打开代码片段界面，
     就可以直接插入一段代码。
-    <br>LiveCodeTemplet 使用markdown文件做为代码片段模板,既可以在本地使用，也可以与多人共同分享一套模板。
-    <br>示例模板: <a href="https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md">https://github.com/caixinyuan/LiveCodeTemplet/blob/main/CodeTemplet.md</a>
-    <br>了解更多： : <a href="https://github.com/caixinyuan/LiveCodeTemplet">https://github.com/caixinyuan/LiveCodeTemplet</a>
+    <br>LiveCodeSnippet 使用markdown文件做为代码片段模板,既可以在本地使用，也可以与多人共同分享一套模板。
+    <br>示例模板: <a href="https://github.com/caixinyuan/LiveCodeSnippet/blob/main/CodeTemplet.md">https://github.com/caixinyuan/LiveCodeSnippet/blob/main/CodeTemplet.md</a>
+    <br>了解更多： : <a href="https://github.com/caixinyuan/LiveCodeSnippet">https://github.com/caixinyuan/LiveCodeSnippet</a>
 ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -34,50 +34,60 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <completion.contributor language="any"
-                                implementationClass="com.cxy.livecodetemplet.contributor.LiveCompletionContributor"></completion.contributor>
+                                implementationClass="com.cxy.livecodesnippet.contributor.LiveCompletionContributor"></completion.contributor>
 
         <!-- application 级别-->
-        <applicationService serviceImplementation="com.cxy.livecodetemplet.storage.LiveCodeTempletStorageSetting"/>
-        <notificationGroup id="LiveCodeTempletNotificationGroup" displayType="BALLOON" key="LiveCodeTemplet Error"/>
+        <applicationService serviceImplementation="com.cxy.livecodesnippet.storage.LiveCodeSnippetProjectStorageSetting"/>
+        <notificationGroup id="LiveCodeSnippetNotificationGroup" displayType="BALLOON"/>
 
     </extensions>
 
 
     <!--    事件监听-->
     <applicationListeners>
-        <listener class="com.cxy.livecodetemplet.listener.LiveCodeTempletProjectManagerListener"
+        <listener class="com.cxy.livecodesnippet.listener.ProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
     <actions>
-        <action id="openSetting" class="com.cxy.livecodetemplet.action.OpenSettingForm" text="LiveCodeTemplet配置"
-                description="LiveCodeTemplet配置窗口">
+        <action id="openSetting" class="com.cxy.livecodesnippet.action.OpenSettingForm" text="LiveCodeSnippet Setting"
+                description="LiveCodeSnippet配置窗口">
 
         </action>
-        <action id="OpenCodeSnippet" class="com.cxy.livecodetemplet.action.OpenCodeSnippetForm" text="OpenCodeSnippet"
+        <action id="OpenCodeSnippet" class="com.cxy.livecodesnippet.action.OpenCodeSnippetForm" text="OpenCodeSnippet"
                 description="打开代码片段窗口">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt Q"/>
         </action>
 
-        <action id="OpenSearch" class="com.cxy.livecodetemplet.action.OpenSearchForm" text="OpenSearch"
+        <action id="OpenAddCodeSnippet" class="com.cxy.livecodesnippet.action.OpenAddCodeSnippetForm" text="OpenAddCodeSnippet"
+                description="打开新增代码片段窗口">
+        </action>
+
+        <action id="OpenSearch" class="com.cxy.livecodesnippet.action.OpenSearchForm" text="OpenSearch"
                 description="搜索代码片段">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl Q"/>
         </action>
 
-        <group id="MainMenuActions" text="LiveCodeTemplet" popup="true">
+        <group id="MainMenuActions" text="LiveCodeSnippet" popup="true">
             <add-to-group group-id="MainMenu" anchor="last" />
             <reference id="openSetting" />
             <reference id="OpenCodeSnippet" />
             <reference id="OpenSearch" />
+            <reference id="OpenAddCodeSnippet" />
         </group>
-        <group id="EditorPopupMenuActions" text="LiveCodeTemplet">
+        <group id="ToolMenuActions" text="LiveCodeSnippet" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last" />
+            <reference id="openSetting" />
+            <reference id="OpenCodeSnippet" />
+            <reference id="OpenSearch" />
+            <reference id="OpenAddCodeSnippet" />
+        </group>
+        <group id="EditorPopupMenuActions" text="LiveCodeSnippet">
             <separator />
             <reference id="OpenCodeSnippet" />
             <reference id="OpenSearch" />
+            <reference id="OpenAddCodeSnippet" />
             <separator />
             <add-to-group group-id="EditorPopupMenu" anchor="last" />
         </group>
     </actions>
-
-    <depends>org.intellij.plugins.markdown</depends>
-
 </idea-plugin>
