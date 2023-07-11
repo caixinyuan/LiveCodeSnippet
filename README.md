@@ -6,7 +6,7 @@ LiveCodeSnippet 是一个能帮助你快速查找及插入代码片段的插件�
 
 ###### 地址示例：
 
-1. https://github.com/caixinyuan/LiveCodeSnippet/blob/main/CodeTemplet.md
+1. https://github.com/caixinyuan/LiveCodeSnippet/blob/main/CodeSnippetTemplet.md
 2. /home/CodeTemplet.md
 
 ####  模板示例
