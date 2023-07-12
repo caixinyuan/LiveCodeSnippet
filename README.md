@@ -3,6 +3,8 @@ LiveCodeSnippet 是一个能帮助你快速查找及插入代码片段的插件�
 
 #### 使用方法：
 ​	在IDEA的工具栏中点击LiveCodeTemplet->LiveCodeTemplet配置 来配置代码模板的地址，地址支持远程HTTP和本地地址。
+​	也可以在编辑器内右键->OpenAddCodeSnippet页面来新增代码片段
+  使用ctrl+Q 来搜索需要的代码片段内容，选中后可直接将代码片段插入到编辑器内。
 
 ###### 地址示例：
 
