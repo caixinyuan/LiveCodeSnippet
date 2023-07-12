@@ -1,3 +1,6 @@
+version = "1.0.9"
+group = "com.cxy"
+
 buildscript {
     repositories {
         maven { url = uri("https://maven.aliyun.com/repository/public/") }
@@ -13,13 +16,11 @@ buildscript {
     }
 }
 
-
 plugins {
     id("java")
     id("org.jetbrains.intellij") version "1.13.0"
 }
-group = "com.cxy"
-version = "1.0.7"
+
 
 repositories {
     mavenLocal()

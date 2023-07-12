@@ -12,7 +12,6 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.TitlePanel;
 import com.intellij.openapi.ui.popup.IconButton;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
@@ -36,13 +35,11 @@ import java.util.List;
 import static javax.swing.SwingConstants.LEFT;
 
 public class OpenSearchForm extends AnAction implements DumbAware {
-
     private JBPopup jbPopup;
-
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         SearchCodeSnippetDialog main = new SearchCodeSnippetDialog();
-        JComponent mainPanel = (JComponent) main.getContentPanel().getComponent(0);
+        JComponent mainPanel = main.getContentPanel();
         jbPopup = JBPopupFactory.getInstance()
                 .createComponentPopupBuilder(mainPanel, mainPanel)
                 .setResizable(true)
@@ -68,7 +65,6 @@ public class OpenSearchForm extends AnAction implements DumbAware {
         protected SearchCodeSnippetDialog() {
             super(null);
             init();
-            setTitle("Search Dialog");
             setModal(false);
         }
 
@@ -81,7 +77,7 @@ public class OpenSearchForm extends AnAction implements DumbAware {
             JPanel mainPanel = new JPanel();
             mainPanel.setLayout(new BorderLayout());
             List<CodeSnippetModel> data = SQLiteUtil.getInstance().getTitleList(a, b);
-            if (data.size() > b) {
+            if (data.size() >= b) {
                 data.add(moreModel);
             }
             InitJBList();
@@ -93,6 +89,12 @@ public class OpenSearchForm extends AnAction implements DumbAware {
             listModel.addAll(data);
             return mainPanel;
         }
+
+        @Override
+        protected Action @NotNull [] createActions() {
+            return new Action[0];
+        }
+
 
 
         private @NotNull ListCellRenderer getListCellRenderer() {
@@ -146,7 +148,6 @@ public class OpenSearchForm extends AnAction implements DumbAware {
             };
         }
 
-
         private void filterList() {
             String searchText = searchTitleField.getText().toLowerCase();
             List<CodeSnippetModel> filteredData = new ArrayList<>(SQLiteUtil.getInstance().getTitleList(searchText));
@@ -161,11 +162,6 @@ public class OpenSearchForm extends AnAction implements DumbAware {
         private void appendListData(List<CodeSnippetModel> data, int index) {
             listModel.addAll(index, data);
         }
-
-        private void appendListData(CodeSnippetModel data) {
-            listModel.addElement(data);
-        }
-
 
         private void InitJBList() {
             int visibleRowCount = 12;

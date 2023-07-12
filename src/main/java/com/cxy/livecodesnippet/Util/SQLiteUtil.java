@@ -4,6 +4,7 @@ import com.cxy.livecodesnippet.model.CodeSnippetModel;
 import com.intellij.openapi.diagnostic.Logger;
 import org.apache.commons.compress.utils.Lists;
 
+import javax.swing.table.TableModel;
 import java.io.File;
 import java.sql.*;
 import java.util.List;
@@ -127,6 +128,27 @@ public class SQLiteUtil {
         }
     }
 
+    public void updateById(CodeSnippetModel codeSnippetModel) {
+        try {
+            String query = "UPDATE codesnippet SET title=?,describe=?,tag=?,people=?,version=?,codetype=?,codesnippet=? WHERE id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, codeSnippetModel.getTitle());
+            preparedStatement.setString(2, codeSnippetModel.getDescribe());
+            preparedStatement.setString(3, String.join(",", codeSnippetModel.getTag()));
+            preparedStatement.setString(4, codeSnippetModel.getPeople());
+            preparedStatement.setFloat(5, codeSnippetModel.getVersion());
+            preparedStatement.setString(6, codeSnippetModel.getCodeType());
+            preparedStatement.setString(7, codeSnippetModel.getCodeSnippet());
+            preparedStatement.setInt(8, codeSnippetModel.getId());
+            preparedStatement.addBatch();
+            preparedStatement.execute();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public String getSnippetById(Integer id) {
         try {
@@ -140,6 +162,33 @@ public class SQLiteUtil {
         }
         return null;
     }
+
+    public CodeSnippetModel getSnippetModelById(Integer id) {
+        try {
+            String query = "SELECT * FROM codesnippet where id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1,id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            CodeSnippetModel temp = new CodeSnippetModel();
+            temp.setId(resultSet.getInt("id"));
+            temp.setTitle(resultSet.getString("title"));
+            temp.setDescribe(resultSet.getString("describe"));
+            temp.setTag(resultSet.getString("tag"));
+            temp.setPeople(resultSet.getString("people"));
+            temp.setVersion(resultSet.getString("version"));
+            temp.setCodeType(resultSet.getString("codetype"));
+            temp.setCodeSnippet(resultSet.getString("codesnippet"));
+
+            resultSet.close();
+            preparedStatement.close();
+            return temp;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public List<CodeSnippetModel> getTitleList(String title) {
         try {
@@ -217,6 +266,18 @@ public class SQLiteUtil {
         return null;
     }
 
+
+    public void deleteCodeSnippetById(int id) {
+        try {
+            String query = "DELETE FROM codesnippet WHERE ID=?;";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+            preparedStatement.execute();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void deleteAll() {
         try {

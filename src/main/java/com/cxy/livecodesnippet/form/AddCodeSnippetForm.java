@@ -33,6 +33,8 @@ public class AddCodeSnippetForm extends DialogWrapper {
     private JPanel codeSinppetTextFieldPanel;
     private String codeSinppetText;
 
+    private CodeSnippetModel saveModel;
+
     public AddCodeSnippetForm() {
         super(null);
         codeSinppetText = "";
@@ -48,6 +50,26 @@ public class AddCodeSnippetForm extends DialogWrapper {
         setTitle("Add CodeSnippet");
         setModal(false);
     }
+
+    public AddCodeSnippetForm(CodeSnippetModel value) {
+        super(null);
+        this.saveModel = value;
+        initField(value);
+        init();
+        setTitle("Update CodeSnippet");
+        setModal(false);
+    }
+
+
+    private void initField(CodeSnippetModel value) {
+        titleTextField.setText(value.getTitle());
+        describeTextField.setText(value.getDescribe());
+        tagsTextField.setText(String.join(",", value.getTag()));
+        createPeopleTextField.setText(value.getPeople());
+        versionTextField.setText(value.getVersion().toString());
+        codeTypeTextField.setText(value.getCodeType());
+    }
+
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
@@ -87,16 +109,28 @@ public class AddCodeSnippetForm extends DialogWrapper {
             return;
         }
 
-        CodeSnippetModel codeSnippetModel = new CodeSnippetModel();
-        codeSnippetModel.setTitle(title);
-        codeSnippetModel.setDescribe(describe);
-        codeSnippetModel.setTag(tags);
-        codeSnippetModel.setPeople(people);
-        codeSnippetModel.setVersion(version);
-        codeSnippetModel.setCodeType(codeType);
-        codeSnippetModel.setCodeSnippet(codeSnippetText);
-        SQLiteUtil.getInstance().insert(codeSnippetModel);
-        PluginMessage.notifyInfo("Add Scuess");
+        if (saveModel != null) {
+            saveModel.setTitle(title);
+            saveModel.setDescribe(describe);
+            saveModel.setTag(tags);
+            saveModel.setPeople(people);
+            saveModel.setVersion(version);
+            saveModel.setCodeType(codeType);
+            saveModel.setCodeSnippet(codeSnippetText);
+            SQLiteUtil.getInstance().updateById(saveModel);
+            PluginMessage.notifyInfo("Update Scuess");
+        } else {
+            saveModel = new CodeSnippetModel();
+            saveModel.setTitle(title);
+            saveModel.setDescribe(describe);
+            saveModel.setTag(tags);
+            saveModel.setPeople(people);
+            saveModel.setVersion(version);
+            saveModel.setCodeType(codeType);
+            saveModel.setCodeSnippet(codeSnippetText);
+            SQLiteUtil.getInstance().insert(saveModel);
+            PluginMessage.notifyInfo("Add Scuess");
+        }
         close(0);
     }
 
@@ -106,6 +140,9 @@ public class AddCodeSnippetForm extends DialogWrapper {
     }
 
     private void createCodeSnippetField() {
+        if (saveModel != null) {
+            codeSinppetText = saveModel.getCodeSnippet();
+        }
         codeSnippetTextField = new LanguageTextField(Language.findLanguageByID("java"), UtilState.getInstance().getProject(), codeSinppetText, false) {
             @Override
             protected @NotNull EditorEx createEditor() {

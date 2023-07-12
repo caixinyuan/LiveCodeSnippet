@@ -3,26 +3,25 @@ package com.cxy.livecodesnippet.form;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Validator;
 import com.cxy.livecodesnippet.Util.Util;
-import com.cxy.livecodesnippet.Util.UtilState;
 import com.cxy.livecodesnippet.services.LiveCodeSnippetProjectService;
 import com.cxy.livecodesnippet.storage.LiveCodeSnippetProjectStorageSetting;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.popup.IconButton;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.Arrays;
-import java.util.Objects;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 
 public class PluginSettingForm extends DialogWrapper {
     private JPanel mainJPanel;
     private JTextField pathInput;
+    private JButton updateButton;
     private static final Logger log = Logger.getInstance(LiveCodeSnippetProjectService.class);
 
     public PluginSettingForm() {
@@ -31,6 +30,7 @@ public class PluginSettingForm extends DialogWrapper {
         setTitle("Plugin Setting");
         setModal(false);
         initURLInputText();
+        initUpdateButton();
     }
 
     /**
@@ -66,11 +66,22 @@ public class PluginSettingForm extends DialogWrapper {
         }
     }
 
+    private void initUpdateButton(){
+        updateButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                updateButtonClick();
+            }
+        });
+    }
+
+
+
 
     @Override
-    protected void doOKAction() {
-        // 确认按钮点击事件的处理逻辑
-        updateButtonClick();
+    protected Action @NotNull [] createActions() {
+        return new Action[]{getCancelAction()};
     }
 
     @Override

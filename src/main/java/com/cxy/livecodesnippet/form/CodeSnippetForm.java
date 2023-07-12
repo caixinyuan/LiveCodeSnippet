@@ -24,10 +24,10 @@ import com.intellij.openapi.editor.markup.HighlighterLayer;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.popup.IconButton;
-import com.intellij.openapi.ui.popup.JBPopup;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.ui.JBPopupMenu;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.EditorTextField;
+import com.intellij.ui.Gray;
 import com.intellij.ui.ListSpeedSearch;
 import com.intellij.ui.SpeedSearchComparator;
 import com.intellij.ui.components.JBList;
@@ -61,6 +61,7 @@ public class CodeSnippetForm extends DialogWrapper {
     private JPanel markdownPreviewPanel;
     private final DefaultActionGroup actionGroup = new DefaultActionGroup();
     private final Integer additionalLinesCount = 2;
+    private int myLockCounter;
 
     private JBCefBrowser jbCefBrowser;
 
@@ -68,6 +69,8 @@ public class CodeSnippetForm extends DialogWrapper {
     private final String inputButtonText = "插入已选择的内容";
 
     private static final Logger log = Logger.getInstance(CodeSnippetForm.class);
+
+    private final DefaultListModel<CodeSnippetModel> defaultListModel = new DefaultListModel<>();
 
 
     public CodeSnippetForm(Object value) {
@@ -139,25 +142,34 @@ public class CodeSnippetForm extends DialogWrapper {
      * 列表点击事件
      */
     private void codeTagListClick() {
-        if (StringUtils.equals("markdown", codeTagList.getSelectedValue().getCodeType())) {
-            createJBCefBrowser();
-            String snippet = SQLiteUtil.getInstance().getSnippetById(codeTagList.getSelectedValue().getId());
-            jbCefBrowser.loadHTML(MarkDownUtil.getInstance().getMarkdownHtml(snippet));
-            markdownPreviewPanel.removeAll();
-            markdownPreviewPanel.add(jbCefBrowser.getComponent());
-            if (!markdownPreviewPanel.isValid()) {
-                markdownPreviewPanel.setVisible(true);
-                editorPanel.setVisible(false);
-                inputButton.setVisible(false);
+        if (isLocked()) return;
+        lock();
+        try {
+            if (StringUtils.equals("markdown", codeTagList.getSelectedValue().getCodeType())) {
+                createJBCefBrowser();
+                String snippet = SQLiteUtil.getInstance().getSnippetById(codeTagList.getSelectedValue().getId());
+                jbCefBrowser.loadHTML(MarkDownUtil.getInstance().getMarkdownHtml(snippet));
+                markdownPreviewPanel.removeAll();
+                markdownPreviewPanel.add(jbCefBrowser.getComponent());
+                if (!markdownPreviewPanel.isValid()) {
+                    markdownPreviewPanel.setVisible(true);
+                    editorPanel.setVisible(false);
+                    inputButton.setVisible(false);
+                }
+            } else {
+                if (markdownPreviewPanel.isValid()) {
+                    inputButton.setVisible(true);
+                    editorPanel.setVisible(true);
+                    markdownPreviewPanel.setVisible(false);
+                }
+                setEditorCodeText();
             }
-        } else {
-            if (markdownPreviewPanel.isValid()) {
-                inputButton.setVisible(true);
-                editorPanel.setVisible(true);
-                markdownPreviewPanel.setVisible(false);
-            }
-            setEditorCodeText();
+        } catch (Exception ex) {
+            log.error("========== codeTagListClick Error ==========", ex);
+        } finally {
+            unlock();
         }
+
     }
 
     @Override
@@ -387,17 +399,57 @@ public class CodeSnippetForm extends DialogWrapper {
 
     private void initJBList() {
         List<CodeSnippetModel> codeSnippetModelListList = SQLiteUtil.getInstance().getTitleList();
-        codeTagList.setPreferredSize(new Dimension(100, codeSnippetModelListList.size() * 46));
-        codeTagList.setListData(codeSnippetModelListList.toArray(new CodeSnippetModel[0]));
         DefaultListCellRenderer defaultListCellRenderer = getListCellRendererComponent();
         codeTagList.setCellRenderer(defaultListCellRenderer);
+        if (codeSnippetModelListList.size() > 0) {
+            Component component = defaultListCellRenderer.getListCellRendererComponent(codeTagList, codeSnippetModelListList.get(0), 0, false, false);
+            codeTagList.setPreferredSize(new Dimension(100, (codeSnippetModelListList.size() * (int) component.getPreferredSize().getHeight())));
+        } else {
+            codeTagList.setPreferredSize(new Dimension(100, 0));
+        }
+        defaultListModel.addAll(codeSnippetModelListList);
+        codeTagList.setModel(defaultListModel);
+        //codeTagList.setListData(codeSnippetModelListList.toArray(new CodeSnippetModel[0]));
+
         codeTagList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 codeTagListClick();
             }
         });
-    }
 
+        JPopupMenu codeSnippetTagPopMenu = new JBPopupMenu();
+        JMenuItem deleteItem = new JMenuItem("删除");
+        JMenuItem EditItem = new JMenuItem("编辑");
+
+        deleteItem.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                int result = Messages.showYesNoDialog("确定删除吗？", "提示", AllIcons.General.WarningDialog);
+                if (result == 0) {
+                    SQLiteUtil.getInstance().deleteCodeSnippetById(codeTagList.getSelectedValue().getId());
+                    int selectIndex = codeTagList.getSelectedIndex();
+                    defaultListModel.remove(selectIndex);
+                    codeTagList.setSelectedIndex(selectIndex - 1);
+                }
+            }
+        });
+        EditItem.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                AddCodeSnippetForm addCodeSnippetForm = new AddCodeSnippetForm(
+                        SQLiteUtil.getInstance().getSnippetModelById(codeTagList.getSelectedValue().getId())
+                );
+                addCodeSnippetForm.show();
+            }
+        });
+
+        codeSnippetTagPopMenu.add(deleteItem);
+        codeSnippetTagPopMenu.add(EditItem);
+        codeTagList.setComponentPopupMenu(codeSnippetTagPopMenu);
+
+    }
 
     private void createJBCefBrowser() {
         if (jbCefBrowser == null) {
@@ -412,22 +464,19 @@ public class CodeSnippetForm extends DialogWrapper {
 
                 @Override
                 public boolean onContextMenuCommand(CefBrowser browser, CefFrame frame, CefContextMenuParams params, int commandId, int eventFlags) {
-                    switch (commandId) {
-                        case 10086:
-                            String selectText = params.getSelectionText();
-                            if (StringUtils.isNotEmpty(selectText)) {
-                                SwingUtilities.invokeLater(() -> {
-                                    inputButtonClick(selectText);
-                                });
-                            }
-                            break;
+                    if (commandId == 10086) {
+                        String selectText = params.getSelectionText();
+                        if (StringUtils.isNotEmpty(selectText)) {
+                            SwingUtilities.invokeLater(() -> {
+                                inputButtonClick(selectText);
+                            });
+                        }
                     }
                     return super.onContextMenuCommand(browser, frame, params, commandId, eventFlags);
                 }
             }, jbCefBrowser.getCefBrowser());
         }
     }
-
 
     private @NotNull DefaultListCellRenderer getListCellRendererComponent() {
         return new DefaultListCellRenderer() {
@@ -460,7 +509,7 @@ public class CodeSnippetForm extends DialogWrapper {
                         }
                         final JLabel descriptionLabel = new JLabel(normalizedDesc);
                         descriptionLabel.setBackground(bg);
-                        descriptionLabel.setForeground(fg);
+                        descriptionLabel.setForeground(Gray._108);
                         descriptionLabel.setBorder(JBUI.Borders.emptyLeft(15));
                         panel.add(descriptionLabel, BorderLayout.AFTER_LAST_LINE);
                         panel.setToolTipText(normalizedDesc);
@@ -470,4 +519,18 @@ public class CodeSnippetForm extends DialogWrapper {
             }
         };
     }
+
+
+    void lock() {
+        myLockCounter++;
+    }
+
+    void unlock() {
+        if (myLockCounter > 0) myLockCounter--;
+    }
+
+    private boolean isLocked() {
+        return myLockCounter > 0;
+    }
+
 }

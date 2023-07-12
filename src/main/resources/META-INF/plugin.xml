@@ -8,7 +8,7 @@
     <name>LiveCodeSnippet</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="maonenbei@126.com" url="https://github.com/caixinyuan/LiveCodeSnippet">Caixy</vendor>
+    <vendor email="maonanbei@126.com" url="https://github.com/caixinyuan/LiveCodeSnippet">Caixy</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
