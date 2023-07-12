@@ -16,6 +16,8 @@ import com.intellij.openapi.ui.popup.IconButton;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.Gray;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBList;
@@ -36,10 +38,11 @@ import static javax.swing.SwingConstants.LEFT;
 
 public class OpenSearchForm extends AnAction implements DumbAware {
     private JBPopup jbPopup;
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         SearchCodeSnippetDialog main = new SearchCodeSnippetDialog();
-        JComponent mainPanel = main.getContentPanel();
+        JComponent mainPanel = main.createCenterPanel();
         jbPopup = JBPopupFactory.getInstance()
                 .createComponentPopupBuilder(mainPanel, mainPanel)
                 .setResizable(true)
@@ -54,22 +57,21 @@ public class OpenSearchForm extends AnAction implements DumbAware {
         jbPopup.showCenteredInCurrentWindow(UtilState.getInstance().getProject());
     }
 
-    private class SearchCodeSnippetDialog extends DialogWrapper {
-        private SearchTextField searchTitleField = new SearchTextField();
-        private DefaultListModel<CodeSnippetModel> listModel = new DefaultListModel<>();
-        private JBList<CodeSnippetModel> codeSnippetJBList = new JBList<>(listModel);
+    private class SearchCodeSnippetDialog{
+        private final SearchTextField searchTitleField = new SearchTextField();
+        private final DefaultListModel<CodeSnippetModel> listModel = new DefaultListModel<>();
+        private final JBList<CodeSnippetModel> codeSnippetJBList = new JBList<>(listModel);
         private int myLockCounter;
 
         private int a = 0, b = 10;
 
         protected SearchCodeSnippetDialog() {
-            super(null);
-            init();
-            setModal(false);
+
+
+
         }
 
         @Nullable
-        @Override
         protected JComponent createCenterPanel() {
             CodeSnippetModel moreModel = new CodeSnippetModel() {{
                 setTitle("... more");
@@ -90,11 +92,6 @@ public class OpenSearchForm extends AnAction implements DumbAware {
             return mainPanel;
         }
 
-        @Override
-        protected Action @NotNull [] createActions() {
-            return new Action[0];
-        }
-
 
 
         private @NotNull ListCellRenderer getListCellRenderer() {
@@ -108,8 +105,8 @@ public class OpenSearchForm extends AnAction implements DumbAware {
                     CodeSnippetModel codeSnippetModelValue = (CodeSnippetModel) value;
                     if (StringUtils.equals("... more", codeSnippetModelValue.getTitle())) {
                         JBLabel moreLabel = new JBLabel("... more");
-                        moreLabel.setForeground(new Color(223, 225, 229, 255));
-                        moreLabel.setBackground(new Color(43, 45, 48, 255));
+                        moreLabel.setForeground(new JBColor(new Color(0,0,0,255), new Color(223, 225, 229, 255)));
+                        moreLabel.setBackground(new JBColor(Gray._255,new Color(43, 45, 48, 255)));
                         moreLabel.setFont(new Font("Inter", 0, 16));
                         panel.add(moreLabel, BorderLayout.AFTER_LAST_LINE);
                         return panel;
@@ -208,7 +205,6 @@ public class OpenSearchForm extends AnAction implements DumbAware {
                             public void run(@NotNull ProgressIndicator indicator) {
                                 SwingUtilities.invokeLater(() -> {
                                     new CodeSnippetForm(codeSnippetJBList.getSelectedValue()).show();
-                                    close(0);
                                     jbPopup.cancel();
                                 });
                             }
