@@ -15,7 +15,6 @@ public class ProjectManagerListener implements com.intellij.openapi.project.Proj
      * @param project
      */
     public void projectOpened(@NotNull Project project) {
-        UtilState.getInstance().setProject(project);
         ProgressManager.getInstance().run(new Task.Backgroundable(UtilState.getInstance().getProject(), "正在解析模板") {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {

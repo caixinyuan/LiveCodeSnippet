@@ -12,8 +12,6 @@ import java.util.List;
 public class UtilState {
 
     private List<CodeSnippetModel> codeSnippetList = new ArrayList<>();
-
-    private Project project;
     private FileType javaFileType = null;
 
     private UtilState() {
@@ -35,19 +33,9 @@ public class UtilState {
         this.codeSnippetList.addAll(codeSnippetList);
     }
 
-    public List<CodeSnippetModel> getCodeSnippetList() {
-        return codeSnippetList;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
 
     public Project getProject() {
-        if (project == null) {
-            project = ProjectManager.getInstance().getDefaultProject();
-        }
-        return project;
+        return ProjectManager.getInstance().getDefaultProject();
     }
 
     public FileType getJavaFileType() {
