@@ -14,6 +14,8 @@ public class UtilState {
     private List<CodeSnippetModel> codeSnippetList = new ArrayList<>();
     private FileType javaFileType = null;
 
+    private Project project;
+
     private UtilState() {
     }
 
@@ -34,7 +36,20 @@ public class UtilState {
     }
 
 
+    public void setProject(Project project) {
+        if (this.project == null || !this.project.equals(project)) {
+            this.project = project;
+        }
+    }
+
+
     public Project getProject() {
+        if (project != null && project.isOpen() && !project.isDisposed()) {
+            return project;
+        }
+        if (!ProjectManager.getInstance().getDefaultProject().isOpen() && ProjectManager.getInstance().getOpenProjects().length > 0) {
+            return ProjectManager.getInstance().getOpenProjects()[0];
+        }
         return ProjectManager.getInstance().getDefaultProject();
     }
 

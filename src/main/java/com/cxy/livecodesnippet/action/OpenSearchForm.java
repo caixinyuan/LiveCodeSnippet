@@ -39,8 +39,10 @@ import static javax.swing.SwingConstants.LEFT;
 public class OpenSearchForm extends AnAction implements DumbAware {
     private JBPopup jbPopup;
 
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        UtilState.getInstance().setProject(e.getProject());
         SearchCodeSnippetDialog main = new SearchCodeSnippetDialog();
         JComponent mainPanel = main.createCenterPanel();
         jbPopup = JBPopupFactory.getInstance()

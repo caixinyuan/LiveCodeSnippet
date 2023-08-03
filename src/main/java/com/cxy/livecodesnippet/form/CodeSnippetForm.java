@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.*;
+import com.intellij.openapi.editor.actionSystem.EditorActionManager;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
@@ -23,6 +24,7 @@ import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.editor.markup.HighlighterLayer;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.openapi.ui.Messages;
@@ -112,27 +114,31 @@ public class CodeSnippetForm extends DialogWrapper {
      * 插入代码段按钮点击事件
      */
     private void inputButtonClick(String text) {
-        Editor editor = FileEditorManager.getInstance(UtilState.getInstance().getProject()).getSelectedTextEditor();
-        if (editor != null) {
-            WriteCommandAction.runWriteCommandAction(UtilState.getInstance().getProject(), () -> {
-                CaretModel caretModel = editor.getCaretModel();
-                int offset = caretModel.getOffset();
-                Document document = editor.getDocument();
-                if (StringUtils.isNotEmpty(text)) {
-                    document.insertString(offset, text);
-                    editor.getSelectionModel().setSelection(offset, offset + text.length());
-                } else {
-                    String insertText = editorCodeText.getText();
-                    if (editorCodeText.getEditor() != null && editorCodeText.getEditor().getSelectionModel().hasSelection(true)) {
-                        insertText = editorCodeText.getEditor().getSelectionModel().getSelectedText();
+        if (FileEditorManager.getInstance(UtilState.getInstance().getProject()) != null) {
+            Editor editor = FileEditorManager.getInstance(UtilState.getInstance().getProject()).getSelectedTextEditor();
+            if (editor != null) {
+                WriteCommandAction.runWriteCommandAction(UtilState.getInstance().getProject(), () -> {
+                    CaretModel caretModel = editor.getCaretModel();
+                    int offset = caretModel.getOffset();
+                    Document document = editor.getDocument();
+                    if (StringUtils.isNotEmpty(text)) {
+                        document.insertString(offset, text);
+                        editor.getSelectionModel().setSelection(offset, offset + text.length());
+                    } else {
+                        String insertText = editorCodeText.getText();
+                        if (editorCodeText.getEditor() != null && editorCodeText.getEditor().getSelectionModel().hasSelection(true)) {
+                            insertText = editorCodeText.getEditor().getSelectionModel().getSelectedText();
+                        }
+                        if (StringUtils.isNotEmpty(insertText)) {
+                            document.insertString(offset, insertText);
+                            editor.getSelectionModel().setSelection(offset, offset + insertText.length());
+                        }
                     }
-                    if (StringUtils.isNotEmpty(insertText)) {
-                        document.insertString(offset, insertText);
-                        editor.getSelectionModel().setSelection(offset, offset + insertText.length());
-                    }
-                }
-            });
-            close(0);
+                });
+                close(0);
+            } else {
+                PluginMessage.notifyInfo("not found Editor");
+            }
         } else {
             PluginMessage.notifyInfo("not found Editor");
         }

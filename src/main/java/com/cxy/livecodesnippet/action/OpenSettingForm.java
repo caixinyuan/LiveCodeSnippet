@@ -17,6 +17,7 @@ public class OpenSettingForm extends AnAction implements DumbAware {
     //打开插件配置窗口
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        UtilState.getInstance().setProject(e.getProject());
         new PluginSettingForm().show();
     }
 
